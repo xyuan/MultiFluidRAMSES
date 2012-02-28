@@ -1,0 +1,155 @@
+\usepackage{graphicx}
+\usepackage{graphpap}
+\usepackage{epsf}
+\usepackage{amssymb}
+\usepackage{color}
+
+\usepackage{natbib}
+
+\sloppy
+
+%\hbadness 10000 \topmargin -1cm \oddsidemargin -.5truecm
+%\evensidemargin=\oddsidemargin \textheight=23cm \textwidth=16.5cm
+
+\def\FIG #1 #2 [#3] #4\par{%
+%  \begin{figure} [ht]\begin{center}%
+  \begin{figure}\begin{center}%
+    \includegraphics*[#3]{#2}%
+    \\
+    \caption{#4}%
+    \label{#1}%
+  \end{center}\end{figure}%
+}
+\def\FIGG #1 #2 #3 [#4] #5\par{%
+  \begin{figure*}[ht]\begin{center}%
+%    \resizebox{\hsize}{!}{
+               \includegraphics*[#4]{#2}
+               \includegraphics*[#4]{#3}%}%
+    \caption{#5}%
+    \label{#1}%
+   \end{center}\end{figure*}%
+}
+%
+\def\FIGth #1 #2 #3 #4 [#5] #6\par{%
+  \begin{figure*}[ht]\begin{center}%
+        \includegraphics[#5]{#2} \\
+        \includegraphics[#5]{#3}
+        \includegraphics[#5]{#4}
+        \caption{#6}
+        \label{#1}
+   \end{center}\end{figure*}
+}
+% 
+\def\FIGfo #1 #2 #3 #4 #5 [#6] #7\par{%
+  \begin{figure*}[ht]\begin{center}%
+        \includegraphics[#6]{#2}
+        \includegraphics[#6]{#3} \\
+        \includegraphics[#6]{#4}
+        \includegraphics[#6]{#5}
+        \caption{#7}
+        \label{#1}
+   \end{center}\end{figure*}
+}
+% 
+\def\FIGsi #1 #2 #3 #4 #5 #6 #7 [#8] #9\par{%
+  \begin{figure*}[ht]\begin{center}%
+        \includegraphics[#8]{#2}
+        \includegraphics[#8]{#3}\\
+        \includegraphics[#8]{#4}
+        \includegraphics[#8]{#5}\\
+        \includegraphics[#8]{#6}
+        \includegraphics[#8]{#7}
+        \caption{#9}
+        \label{#1}
+    \end{center}\end{figure*}
+}
+
+\def\rfig#1{Fig. \ref{#1}}
+
+\def\etal{et al. }
+\def\msun{M_\odot}
+\def\Ek{E_{\mathrm{thr}}}
+\def\neh{n_{e, > \Ek}}
+\def\Ka{$K_{\alpha}$ }
+
+\def\spex{{\sc spex}}
+\def\rhoc{\rho_\mathrm{CSM}}
+
+\newcommand{\dk}[1]{{\bf{\color{red}!D:} #1}}
+\newcommand{\mt}[1]{\mathrm{#1}}
+\newcommand{\sect}[1]{Section~\ref{#1}}
+ 
+\def\lvm{\leavevmode\hbox to\parindent{\hfill}}
+\def\req#1{(\ref{#1})}
+
+\def\d{\partial}   
+\def\dT{\partial T}
+\def\dt{\partial t}
+\def\du{\partial u}
+\def\dr{\partial r}
+\def\dm{\partial m}
+\def\dP{\partial P}
+\def\dE{\partial E}
+\def\dS{\partial S}
+\def\dX{\partial X}
+\def\drho{\partial \rho}
+\def\L{\left} 
+\def\R{\right}
+\def\eps{\varepsilon}
+\def\kelv{{\rm K}}
+\def\BE{\begin{equation}}
+\def\EE{\end{equation}}
+\def\BA{\begin{array}}
+\def\EA{\end{array}}
+\def\BAN{\begin{eqnarray*}}
+\def\EAN{\end{eqnarray*}}
+\def\apj{Astrophys. J.}
+ 
+\def\la{\mathrel{\mathpalette\fun <}}
+\def\ga{\mathrel{\mathpalette\fun >}}
+\def\fun#1#2{\lower3.6pt\vbox{\baselineskip0pt\lineskip.9pt
+\ialign{$\mathsurround=0pt#1\hfil##\hfil$\crcr#2\crcr\sim\crcr}}}
+%\def\plotone#1{\epsfysize=8cm\epsffile[-182 144 392 718]{#1}}
+\def\plotone#1{\epsfysize=15cm\epsffile{#1}}
+\def\pn{\par\noindent}
+\def\pnh{\par\vskip 0.5pc\noindent}
+\def\pvh{\par\vskip 0.5pc}
+\def\ergs{ergs s$^{-1}$ }
+\def\gmc{g cm$^{-3}$}
+\def\kms{km s$^{-1}$}
+%\def\msun{\hbox{M}_\odot}
+\def\msun{M_\odot}
+\def\Msun{$\msun$}
+\def\Rsun{$R_\odot$}
+\def\fefsx{$^{56}$Fe}
+\def\cofsx{$^{56}$Co}
+\def\nifsx{$^{56}$Ni}
+\def\e#1{$\times 10^{#1}$ }
+\def\ee#1{$10^{#1}$ }
+\def\lum#1{$L_{\rm #1}$}
+\def\mas#1{$M_{\rm #1}$ }
+\def\etal{et al. }
+\def\ltsima{$\; \buildrel < \over \sim \;$}
+\def\ltsim{\lower.5ex\hbox{\ltsima}}
+\def\gtsima{$\; \buildrel > \over \sim \;$}
+\def\gtsim{\lower.5ex\hbox{\gtsima}}
+\def\Msunyr{~M_\odot~{\rm yr}^{-1}}
+
+\def\Ecr{E_\mt{CR}}
+\def\Pcr{P_\mt{CR}}
+\def\PQ{PQ_\mt{CR}}
+\def\qcr{q_\mt{CR}}
+\def\kcr{\kappa_\mt{CR}}
+\def\ecr{\epsilon_\mt{esc}}
+\def\lcr{\lambda_\mt{esc}}
+\def\gcr{\gamma_\mt{CR}}
+\def\kcrd{\;\mt{cm}^2\mt{s}^{-1}}
+ 
+
+%bibliography
+\def\apj{ApJ}
+\def\aap{A\&A}
+\def\apjs{ApJ Supl.}
+\def\aaps{A\&A Supl.}
+\def\mnras{MNRAS}
+

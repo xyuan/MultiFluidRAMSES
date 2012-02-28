@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/itp/ramses/!svn/ver/130/trunk/ramses/aton/sims/iliev_tests/5/iliev_data
+END
+download.sh
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/itp/ramses/!svn/ver/130/trunk/ramses/aton/sims/iliev_tests/5/iliev_data/download.sh
+END
+toascii.py
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/itp/ramses/!svn/ver/130/trunk/ramses/aton/sims/iliev_tests/5/iliev_data/toascii.py
+END
+alltoascii.py
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/itp/ramses/!svn/ver/130/trunk/ramses/aton/sims/iliev_tests/5/iliev_data/alltoascii.py
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/itp/ramses/!svn/ver/130/trunk/ramses/aton/sims/iliev_tests/5/iliev_data/README
+END

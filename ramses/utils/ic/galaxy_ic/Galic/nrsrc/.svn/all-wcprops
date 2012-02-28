@@ -1,0 +1,143 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc
+END
+zriddr.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/zriddr.c
+END
+indexx.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/indexx.c
+END
+gcf.c
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/gcf.c
+END
+gser.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/gser.c
+END
+gammp.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/gammp.c
+END
+ran1.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/ran1.c
+END
+trapzd.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/trapzd.c
+END
+polint.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/polint.c
+END
+gasdev.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/gasdev.c
+END
+splint.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/splint.c
+END
+gammln.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/gammln.c
+END
+nrutil.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/nrutil.c
+END
+qromb.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/qromb.c
+END
+erff.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/erff.c
+END
+nrutil.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/nrutil.h
+END
+nr.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/nr.h
+END
+bessi0.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/bessi0.c
+END
+bessj0.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/bessj0.c
+END
+bessi1.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/bessi1.c
+END
+bessk0.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/bessk0.c
+END
+bessj1.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/bessj1.c
+END
+bessk1.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/bessk1.c
+END
+spline.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/itp/ramses/!svn/ver/104/trunk/ramses/utils/ic/galaxy_ic/Galic/nrsrc/spline.c
+END

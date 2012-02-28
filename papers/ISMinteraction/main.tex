@@ -1,0 +1,98 @@
+%% This is emulateapj reformatting of the AASTEX sample document
+%%
+%\documentclass[iop]{emulateapj-rtx4}
+%\documentclass[iop]{aastex}
+
+%\documentclass[oldversion]{aa}
+\documentclass[referee,oldversion]{aa}
+
+
+\input{defs}
+
+\def\basedir{../../ramses/output}
+
+\def\xilo{\basedir/bckreact_b5_n01_E1_M14_t3d3}
+\def\xime{\basedir/weakxi4_b5_n01_E1_M14_t3d3}
+\def\xihi{\basedir/seedxi5_b5_n01_E1_M14_t3d3}
+
+
+\usepackage{txfonts}
+%\usepackage{natbib}
+\bibpunct{(}{)}{,}{a}{}{,}
+
+\begin{document}
+
+\title{Expansion of the SNR into ISM}
+\titlerunning{SNRs expanding into ISM}
+
+\author{D.~Kosenko\inst{1,2} \and A. Decourchelle\inst{1}}
+   \institute{
+CEA, Saclay, France
+    \email{daria.kosenko@cea.fr}
+         \and
+SAI, Moscow, 119992, Russia
+             }
+
+\authorrunning{Kosenko et al.}
+\date{Received ...; accepted ... }
+
+\abstract{
+To study the impact on ISM from SNR. Core-Collapse and Thermonuclear. CR acceleration on/off. Expanding into CSM/ISM. 
+}
+
+\keywords{}
+
+%\maketitle
+
+%\tableofcontents
+
+%\section{Introduction}
+%\section{Method}
+%\section{Initial condition}
+
+
+%\FIGsi profiles  \xilo/radius_t.pdf  \xime/radius_t.pdf  \xihi/radius_t.pdf  \xilo/Pc_Ptot_t.pdf  \xime/Pc_Ptot_t.pdf  \xihi/Pc_Ptot_t.pdf   \xilo/r_tot_t.pdf   \xime/r_tot_t.pdf  \xihi/r_tot_t.pdf  [width=0.1\hsize,angle=0]  Profiles
+
+%\section{Numerical models}
+  \begin{figure*}[ht]\begin{center}%
+        \includegraphics*[width=0.29\hsize]{\xilo/radius_t.pdf}
+        \includegraphics*[width=0.29\hsize]{\xilo/Pc_Ptot_t.pdf}
+        \includegraphics*[width=0.29\hsize]{\xilo/r_tot_t.pdf}\\
+        \includegraphics*[width=0.29\hsize]{\xime/radius_t.pdf}
+        \includegraphics*[width=0.29\hsize]{\xime/Pc_Ptot_t.pdf}
+        \includegraphics*[width=0.29\hsize]{\xime/r_tot_t.pdf}\\
+        \includegraphics*[width=0.29\hsize]{\xihi/radius_t.pdf}
+        \includegraphics*[width=0.29\hsize]{\xihi/Pc_Ptot_t.pdf}
+        \includegraphics*[width=0.29\hsize]{\xihi/r_tot_t.pdf}\\
+        \caption{Temporal evolution of the radii (left column), normalized CR pressure (middle column), total compression ratio (right column). Top row: $\lg{\xi} = 3.5$, middle row: $\lg{\xi} = 4.0$, bottom row: $\lg{\xi} = 5.0$, where $\xi$ defines an effective injection momentum through eq.~(25) in Blasi et al. (2005).  Legend: FS --- forward shock, RS --- reverse shock.}
+        \label{evol1}
+    \end{center}\end{figure*}
+%  \begin{figure*}[ht]\begin{center}%
+%        \includegraphics*[width=0.4\hsize]{w7_300_2d25_3d3_k1d25qcr00fs_430_prof} 
+%        \includegraphics*[width=0.4\hsize]{w7_300_RGw01_3d3_k1d25qcr00fs_430_prof} 
+%        \includegraphics*[width=0.4\hsize]{w7_300_AGB01t10w_3d3_k1d25qcr00fs_430_prof}
+%        \includegraphics*[width=0.4\hsize]{w7_300_AGB01t25w_3d3_k1d25qcr00fs_430_prof}
+%        \caption{Modeled  ray-traced radial brightness profiles which correspond to Fig.~\ref{winds01} and ~\ref{windsp1} at the age 430 yr,  $n_0 = 0.1\;\mt{cm}^{-3}$. From left to right, then from top to bottom: homogeneous ISM, RG wind,  AGB wind ($\dot{M} = 10^{-5}\;M_\odot/yr$,  t = 0.1 Myr), AGB wind (t = 0.25 Myr)}
+%        \label{windprof1}
+%    \end{center}\end{figure*}
+
+%\section{Discussion}
+
+%\begin{table*}[htdp]
+%\caption{default}
+%\begin{center}
+%\begin{tabular}{|c|c|}
+%
+%\end{tabular}
+%\end{center}
+%\label{default}
+%\end{table}%
+
+
+%\section{Conclusion}
+%\label{conclusion}
+
+\bibliographystyle{aa}
+%\bibliography{mainbib}
+
+\end{document}

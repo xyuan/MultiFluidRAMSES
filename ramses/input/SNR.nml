@@ -1,0 +1,101 @@
+&RUN_PARAMS 
+verbose=.false.
+hydro=.true.
+poisson=.true.
+nrestart=0
+/
+show_fields=0,1,2,3,4,5,6
+/
+
+&AMR_PARAMS
+levelmin=4
+levelmax=6
+ngridmax=100000
+boxlen=0.6
+/
+
+&OUTPUT_PARAMS
+noutput=8
+tout= 11., 20., 50.,
+100., 200., 300., 400., 500.
+/
+
+&EM_PARAMS
+do_emission=.false.
+ionis_data='../em/thermal/data/'
+ionis_state=1
+TeTp=-1
+NeNp=1e-2
+NEI=.true.
+Eph_pi=1e+5,1e15,-0
+Eph_ic=1e+2,1e14,-0
+Eph_sy=1e-5,1e04,-0
+Eph_th=1e+2,1e04,-100
+Z_elt=0
+/
+Eph_th=1740,1870,-100
+Z_elt=14
+/
+
+&ACCEL_PARAMS
+p_res=20
+xi_inj=3.5
+eta_inj=-1
+E_max=-1
+x_frac=0.1
+B_ISM=5
+D_norm=3e22
+D_slope=-1
+zeta=0
+do_accel=.false.
+do_backreact=.false.
+/
+
+&SNR_PARAMS
+t_start=10
+t_scale=10
+E_SN=1
+M_ej=1.4
+n_ISM=0.1
+T_ISM=1e4
+index_ejecta=7
+index_wind=0
+lambda=-1
+omega=2
+! element        H        He       C        N        O        Ne       Na       Mg       Al       Si       S        Ar       Ca       Fe       Ni
+! Z              1        2        6        7        8        10       11       12       13       14       16       18       20       26       28     
+comp_ISM =       0.00   , 1.01   , 3.44   , 3.95   , 3.07   , 3.91   , 5.67   , 4.42   , 5.53   , 4.45  ,  4.79   , 5.44   , 5.64   , 4.33   , 5.75    ! solar (Anders & Grevesse 1989)
+comp_ej  = 1.40, 0.00e-0, 0.00e-0, 1.21e-2, 1.15e-2, 3.76e-1, 1.13e-2, 2.07e-4, 5.90e-2, 3.22e-3, 3.38e-1, 1.19e-1, 1.62e-2, 6.91e-3, 3.60e-1, 7.50e-2 ! C-DDT (Maeda et al 2010)
+/
+
+&HYDRO_PARAMS
+gamma=-53
+scheme='muscl'
+slope_type=1
+riemann='exact'
+courant_factor=0.8
+pressure_fix=.true.
+beta_fix=0.5
+/
+
+&REFINE_PARAMS
+interpol_type=1
+interpol_var=1
+err_grad_f=0.01
+err_grad_p=1
+/
+
+&POISSON_PARAMS
+gravity_type=2
+/
+
+&BOUNDARY_PARAMS
+nboundary = 6
+ibound_min=+1, 0, 0,-1,-1,-1
+ibound_max=+1,+1,+1,-1,+1,+1
+jbound_min= 0,+1, 0, 0,-1,-1
+jbound_max= 0,+1,+1,+1,-1,+1
+kbound_min= 0, 0,+1, 0, 0,-1
+kbound_max= 0, 0,+1,+1,+1,-1
+bound_type= 3, 3, 3, 1, 1, 1
+/
