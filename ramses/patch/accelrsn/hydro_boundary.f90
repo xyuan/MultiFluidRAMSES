@@ -156,7 +156,7 @@ subroutine make_boundary_hydro(ilevel)
                 uu_ref(i,ivar)=uold(ind_cell_ref(i),ivar)
               end do
               do idim=1,ndim
-                xx    (i,idim)=(xg(ind_grid    (i),idim)+xc(        ind ,idim)-skip_loc(idim))*scale
+                 xx    (i,idim)=(xg(ind_grid    (i),idim)+xc(        ind ,idim)-skip_loc(idim))*scale
 !                xx_ref(i,idim)=(xg(ind_grid_ref(i),idim)+xc(ind_ref(ind),idim)-skip_loc(idim))*scale
               end do
 !              uu_ref(i,2+ndim)=uu_ref(i,2+ndim)-e_kin(uu_ref(i,1),uu_ref(i,2:ndim+1),xx_ref(i,1:ndim)) ! e_int = e - e_kin

@@ -18,6 +18,7 @@
 ! 2010/05/17 : use of new function e_kin()           !
 !        /18 : separated from amr_step.f90           !
 !     /08/26 : version 2 of Blasi module             !
+! 2012/04/13 : dk: store the CR pressure             !
 !====================================================!
 
 !###########################################################
@@ -134,8 +135,8 @@ subroutine sample_radial_profile(ilevel)
   
   !if(myid==2)then
   !  do i=1,n
-  !    write(*,"('i = ',I3,' : r = ',F6.4,' : d = ',ES13.6,' , u = ',ES13.6,1x,ES13.6,1x,ES13.6,&
-  !    ' , P = ',ES13.6,', ej = ',ES13.6,', g = ',F6.4)")&
+  !    write(*,"('i = ',I3,' : r = ',F6.4,' : d = ',ES13.6,' , u = ',ES13.6,1x, ES13.6,1x, ES13.6,&
+  !    &' , P = ',ES13.6,', ej = ',ES13.6,', g = ',F6.4)") &
   !    i,radial(i,0),radial(i,1),radial(i,2),radial(i,3),radial(i,4),radial(i,5),radial(i,6),radial(i,7)
   !  enddo
   !endif
@@ -193,7 +194,7 @@ subroutine average_radial_profile(ilevel)
       !          ' and thus belongs to shell ',ishell,' of radius ',temp_loc(ishell,0)
       ! sum primitive variables
       temp_loc(ishell,1) = temp_loc(ishell,1) + uold(icell,1)
-      do ivar=2,4
+      do ivar=2,4 ! {u,v,w}
         temp_loc(ishell,ivar) = temp_loc(ishell,ivar) + uold(icell,ivar)/uold(icell,1) !+ H_th_new * position(icell,ivar-1)
       enddo
 #ifdef VAR_G
@@ -203,7 +204,7 @@ subroutine average_radial_profile(ilevel)
       temp_loc(ishell,5) = temp_loc(ishell,5) + (gamma-1d0)                      &
                          * (uold(icell,5)-e_kin(uold(icell,1),uold(icell,2:ndim+1),position(icell,1:ndim)))
 #endif
-      do ivar=6,nvar
+      do ivar=6,nvar ! other varaibles 
         temp_loc(ishell,ivar) = temp_loc(ishell,ivar) + uold(icell,ivar)/uold(icell,1)
       enddo
     end do
@@ -230,13 +231,13 @@ subroutine average_radial_profile(ilevel)
   
   ! Go back to physical quantities
   
-  do ivar=2,4
+  do ivar=2,4 ! {u,v,w}
     temp(:,ivar) = temp(:,ivar) + H_th_new*temp(:,0)
   enddo
   if(omega==2)then
-    temp(:,1  ) = temp(:,1  )/a_t**3
-    temp(:,2:4) = temp(:,2:4)/a_t
-    temp(:,5  ) = temp(:,5  )/a_t**5
+    temp(:,1  ) = temp(:,1  )/a_t**3  ! den
+    temp(:,2:4) = temp(:,2:4)/a_t     ! {u,v,w}
+    temp(:,5  ) = temp(:,5  )/a_t**5  ! gamma
   endif
   temp(:,0) = temp(:,0)*a_t
   
@@ -336,7 +337,9 @@ subroutine diagnose_shocks(ilevel)
     d2 = radial(i2,1)
     shock(eps)%n0 = d1/(cgs%mp/code%m)
     shock(eps)%r  = d2/d1
-    !write(*,*)'r = ',d2*code%d/user%d,'/',d1*code%d/user%d,' = ',shock(eps)%r
+    !!!!
+    !write(*,*)'r = ',d2*code%d/user%d,'/',d1*code%d/user%d,' = ',shock(eps)%r, '::  Mach=', shock(eps)%M
+    !!!!
     i2 = i_max - eps
     u1 = sqrt(radial(i1,2)**2+radial(i1,3)**2+radial(i1,4)**2)
     u2 = sqrt(radial(i2,2)**2+radial(i2,3)**2+radial(i2,4)**2)
@@ -358,6 +361,7 @@ subroutine diagnose_shocks(ilevel)
     shock_prec(eps)%x=shock(eps)%x
     shock_prec(eps)%u=shock(eps)%u
     i1 = i_max + 3*eps
+    ! write(*,*) 'i_max=', i_max, ' eps=', eps, ',  i1=', i1 ! to see what happens when omega != 2, but 1
     p1 = radial(i1,5)
     p2 = radial(i2,5)
 #ifdef VAR_G
@@ -374,7 +378,7 @@ subroutine diagnose_shocks(ilevel)
       c1 = sqrt(g1*p1/d1)
     endif
     shock(eps)%M = abs(shock(eps)%u-u1) / c1
-    !write(*,*)'d1 = ',d1*code%d/user%d,', P1 = ',p1*code%p/user%p,&
+    !write(*,*)'radial=',radial(i1,5), '::  d1 = ',d1*code%d/user%d,', P1 = ',p1*code%p/user%p,&
     !          ' -> c1 = ',c1*code%u/user%u,' km/s -> Ms = ',shock(eps)%M
   enddo
   
@@ -546,32 +550,76 @@ subroutine back_react(ilevel)
   integer::ilevel
 
   integer::i,ind,icell,iskip,n,eps=+1
+  integer::igrid, ngrid, ncache
   real(dp)::dx,shock_half_width,delta_icell,g_eff_icell,B_eff_icell
+
+
+
+  integer::ibound,boundary_dir,idim,inbor
+  integer,dimension(1:nvector),save::ind_grid,ind_grid_ref
+  integer,dimension(1:nvector),save::ind_cell,ind_cell_ref
+
+
 
   dx=0.5D0**ilevel*boxlen
   shock_half_width=2*dx
   
   n=0
-  do ind=1,twotondim
-    iskip=ncoarse+(ind-1)*ngridmax
-    do i=1,active(ilevel)%ngrid
-      icell=active(ilevel)%igrid(i)+iskip
-      !do eps=-1,+1,+2
-        delta_icell = position(icell,0)-shock(eps)%x/a_t
-        if(delta_icell*eps>=0)then
+  do ind=1,twotondim 
+     iskip=ncoarse+(ind-1)*ngridmax
+     !if (t> 2.0d1) write(*,*) '*** ICELL: ', icell, ' --- ', i, ind, active(ilevel)%igrid(i), ncoarse, iskip
+     !write(*,*) '*** ind, iskip: ', ind, iskip, active(ilevel)%ngrid, ncoarse
+
+     do i=1,active(ilevel)%ngrid
+        icell=active(ilevel)%igrid(i)+iskip
+        !write(*,*) '*** i, icell: ', i, icell, active(ilevel)%igrid(i)
+        !!do eps=-1,+1,+2
+          delta_icell = position(icell,0)-shock(eps)%x/a_t
+          if(delta_icell*eps>=0)then
 #ifdef VAR_G
-          ! to get the proper compression of the fluid
-          g_eff_icell = gamma + (shock(eps)%g_eff-gamma)*exp(-0.5*delta_icell**2/shock_half_width**2)
-          uold(icell,VAR_G) = uold(icell,1) / (g_eff_icell-1.)
-          !if(int(abs(delta_icell)/shock_half_width)<=3)&
-          !  write(*,*)'gamma modified to ',g_eff_icell,' at r = ',position(icell,0),&
-          !  ' (delta = ',delta_icell,' = ',delta_icell/shock_half_width,'shock_half_width)'
+            ! to get the proper compression of the fluid
+            g_eff_icell = gamma + (shock(eps)%g_eff-gamma)*exp(-0.5*delta_icell**2/shock_half_width**2)
+            uold(icell,VAR_G) = uold(icell,1) / (g_eff_icell-1.)
+            !if(int(abs(delta_icell)/shock_half_width)<=3)&
+            !  write(*,*)'gamma modified to ',g_eff_icell,' at r = ',position(icell,0),&
+            !  ' (delta = ',delta_icell,' = ',delta_icell/shock_half_width,'shock_half_width)'
 #endif
-          n=n+1
-        endif
-      !end do
-    end do
+            !!! uold(icell,VAR_W) = shock(eps)%W_cr*uold(icell,1) 
+            n=n+1
+          endif
+        !!end do
+     end do
   end do
   !write(*,*)'  backreaction applied on ',n,'cells'
 
 end subroutine back_react
+
+!###########################################################
+!###########################################################
+!###########################################################
+!###########################################################
+subroutine save_wcr(x,dx,icell)
+  use amr_parameters
+  use amr_commons
+  use hydro_parameters
+  use hydro_commons
+  use const
+  implicit none
+  integer ::icell                         ! Cell index 
+  real(dp)::dx                            ! Cell size
+  real(dp),dimension(1:ndim)::x           ! Cell center position.
+
+  real(dp)::average_cell    ! averaging function
+  integer::n_av=1           ! number of sub-cells for averaging (in each direction)
+  interface
+    function f_init(x,dx,ivar) ! function to average
+      real*8::f_init
+      real*8::dx
+      real*8::x(1:3)
+      integer::ivar
+    end function
+  end interface
+
+  uold(icell,VAR_W) = uold(icell,1) * average_cell(f_init,VAR_W,x,dx,n_av) 
+
+end subroutine save_wcr

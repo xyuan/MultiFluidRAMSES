@@ -44,24 +44,24 @@ module hydro_commons
   
   type shock_parameters ! [physical code units]
     ! hydro diagnostics
-    real(dp)::t      ! diagnostic time
-    real(dp)::x      ! shock radius
-    real(dp)::x_min  ! minimum extent (CD only)
-    real(dp)::x_max  ! maximum extent (CD only)
-    real(dp)::r      ! shock compression ratio
-    real(dp)::u      ! shock velocity
-    real(dp)::M      ! shock Mach number
-    real(dp)::n0     ! upstream density
-    real(dp)::B0     ! upstream magnetic field
+    real(dp)::t           ! diagnostic time
+    real(dp)::x           ! shock radius
+    real(dp)::x_min       ! minimum extent (CD only)
+    real(dp)::x_max       ! maximum extent (CD only)
+    real(dp)::r           ! shock compression ratio
+    real(dp)::u           ! shock velocity
+    real(dp)::M           ! shock Mach number
+    real(dp)::n0          ! upstream density
+    real(dp)::B0          ! upstream magnetic field
     ! acceleration
-    real(dp)::eta    ! injection fraction
-    real(dp)::p_inj  ! injection momentum
-    real(dp)::p_max  ! maximum   momentum
-    real(dp)::W_cr   ! relative CR pressure
-    real(dp)::G_cr   ! CR adiabatic index
-    real(dp)::r_sub  ! sub-shock compression ratio
-    real(dp)::r_tot  ! total compression ratio of the shock
-    real(dp)::g_eff  ! effective adiabatic index
+    real(dp)::eta      ! injection fraction
+    real(dp)::p_inj    ! injection momentum
+    real(dp)::p_max    ! maximum   momentum
+    real(dp)::W_cr     ! relative CR pressure
+    real(dp)::G_cr     ! CR adiabatic index
+    real(dp)::r_sub    ! sub-shock compression ratio
+    real(dp)::r_tot    ! total compression ratio of the shock
+    real(dp)::g_eff    ! effective adiabatic index
   end type shock_parameters
   type(shock_parameters)::shock(-1:+1),shock_prec(-1:+1)
   

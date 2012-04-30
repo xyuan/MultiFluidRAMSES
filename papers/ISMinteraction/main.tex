@@ -11,21 +11,16 @@
 
 \def\basedir{../../ramses/output}
 
-\def\xilo{\basedir/bckreact_b5_n01_E1_M14_t3d3}
-\def\xime{\basedir/weakxi4_b5_n01_E1_M14_t3d3}
-\def\xihi{\basedir/seedxi5_b5_n01_E1_M14_t3d3}
-
-
 \usepackage{txfonts}
 %\usepackage{natbib}
 \bibpunct{(}{)}{,}{a}{}{,}
 
 \begin{document}
 
-\title{Expansion of the SNR into ISM}
-\titlerunning{SNRs expanding into ISM}
+\title{Influence of supernova remnants on the Galactic interstellar medium}
+\titlerunning{Influence of SNRs on the ISM}
 
-\author{D.~Kosenko\inst{1,2} \and A. Decourchelle\inst{1}}
+\author{D.~Kosenko\inst{1,2} \and A. Decourchelle\inst{1} \and G. Ferrand \and P. Hennebelle}
    \institute{
 CEA, Saclay, France
     \email{daria.kosenko@cea.fr}
@@ -43,38 +38,74 @@ To study the impact on ISM from SNR. Core-Collapse and Thermonuclear. CR acceler
 \keywords{}
 
 %\maketitle
-
+%
 %\tableofcontents
 
-%\section{Introduction}
-%\section{Method}
-%\section{Initial condition}
+\section{Introduction}
+
+In this study we investigate quantitatively the feedback from supernova remnants on the interstellar medium. We will study the thermal and kinetic energy contribution. Cosmic ray injection efficiency and structure of the ISM.
+
+
+\section{Initial condition}
+
+First we need to define a framework of the problem. We want to follow the evolution of a supernova remnant up to the age of 3000 years. 
+%Total supernova rate in the Galaxy is $20\pm8$ per millennium.
+%{\it Total luminosity of the Galaxy is $2\times10^{10}\;L_\odot$. Type is (probably) Sb.} Rate plots in Mannucci et. al. (2005).
+%Therefore $1.3\pm0.9$century (Cappellaro et. al. 1999).
+%20\% Type Ia;  10\% Type Ib/c;  70\% Type II (The et. al. (2006))
+
+%R. Diehl et al. 2006 Nature 439 45. Shifts in the gamma-ray line from 26Al caused by the Doppler effect along the plane of the galaxy, owing to galactic rotation. The broad distribution is from a three-dimensional model of the spatial distribution of 26Al - based on free electrons in the interstellar medium - that matches the line shifts measured by INTEGRAL.
+
+According to \citet{diehl:06} the rate of the core-collapse supernova in the Galaxy is estimated $1.9\pm1.1$/century. If we assume that among all the supernova 20\% are of type Ia;  10\% type Ib/c;  and 70\% type II (The et. al. (2006)) then we derive an approximate rate of the thermonuclear (type Ia) of $0.5\pm0.3$ per century. 
+
+%thin disk: d = 30 kpc, h=0.3 kpc; thick disk,  d=20 kpc, h=1 kpc. verify the numbers.
+
+Assuming that most of the type II SN occur in the thin disk ($h \simeq 0.3$ kpc, $r \simeq 15$ kpc, ref?) with the total volume of $200 \; \mt{kpc}^3$, thus in a time span of 3000 years one supernova type II contributes to the ISM confined in a box of $\sim 3 \mt{kpc}^3$. (box length scale  $1.5$ kpc) 
+
+Type Ia supernovae prevail in the older stellar population, thus they are distributed in the thick stellar disk ($h=1$ kpc, $r = 10$ kpc, ref?) as well as in the halo, which contains most of the old stars with volume of $300 \; \mt{kpc}^3$. Therefore the specific volume for the type Ia SNRs in a 3000-years timespan is $20 \; \mt{kpc}^3$ (box length scale $3$ kpc)
+
+Effectively the estimated specific volumes are more extended, as these explosion do not occur simultaneously. These estimates are rather lower limits. The estimates imply that for the period of 3000 years there is no interference of the two SN event in a given space volume. For the simplicity we perform all the studies for the box of 1 kpc size. All the results can be recalculated later for different length scales and rates.
+
+We consider the evolution of an SNR type Ia with different assumptions about ISM structure: homogeneous medium, stratified, turbulent medium. For the type II SNR we investigate homogeneous, turbulent, wind CSM medium.
+
+\section{Method}
+For the project we employ the modified \citet{ferrand} AMR code RAMSES \citet{teyssier:2002}
+...
 
 
 %\FIGsi profiles  \xilo/radius_t.pdf  \xime/radius_t.pdf  \xihi/radius_t.pdf  \xilo/Pc_Ptot_t.pdf  \xime/Pc_Ptot_t.pdf  \xihi/Pc_Ptot_t.pdf   \xilo/r_tot_t.pdf   \xime/r_tot_t.pdf  \xihi/r_tot_t.pdf  [width=0.1\hsize,angle=0]  Profiles
 
 %\section{Numerical models}
-  \begin{figure*}[ht]\begin{center}%
-        \includegraphics*[width=0.29\hsize]{\xilo/radius_t.pdf}
-        \includegraphics*[width=0.29\hsize]{\xilo/Pc_Ptot_t.pdf}
-        \includegraphics*[width=0.29\hsize]{\xilo/r_tot_t.pdf}\\
-        \includegraphics*[width=0.29\hsize]{\xime/radius_t.pdf}
-        \includegraphics*[width=0.29\hsize]{\xime/Pc_Ptot_t.pdf}
-        \includegraphics*[width=0.29\hsize]{\xime/r_tot_t.pdf}\\
-        \includegraphics*[width=0.29\hsize]{\xihi/radius_t.pdf}
-        \includegraphics*[width=0.29\hsize]{\xihi/Pc_Ptot_t.pdf}
-        \includegraphics*[width=0.29\hsize]{\xihi/r_tot_t.pdf}\\
-        \caption{Temporal evolution of the radii (left column), normalized CR pressure (middle column), total compression ratio (right column). Top row: $\lg{\xi} = 3.5$, middle row: $\lg{\xi} = 4.0$, bottom row: $\lg{\xi} = 5.0$, where $\xi$ defines an effective injection momentum through eq.~(25) in Blasi et al. (2005).  Legend: FS --- forward shock, RS --- reverse shock.}
-        \label{evol1}
-    \end{center}\end{figure*}
-%  \begin{figure*}[ht]\begin{center}%
-%        \includegraphics*[width=0.4\hsize]{w7_300_2d25_3d3_k1d25qcr00fs_430_prof} 
-%        \includegraphics*[width=0.4\hsize]{w7_300_RGw01_3d3_k1d25qcr00fs_430_prof} 
-%        \includegraphics*[width=0.4\hsize]{w7_300_AGB01t10w_3d3_k1d25qcr00fs_430_prof}
-%        \includegraphics*[width=0.4\hsize]{w7_300_AGB01t25w_3d3_k1d25qcr00fs_430_prof}
-%        \caption{Modeled  ray-traced radial brightness profiles which correspond to Fig.~\ref{winds01} and ~\ref{windsp1} at the age 430 yr,  $n_0 = 0.1\;\mt{cm}^{-3}$. From left to right, then from top to bottom: homogeneous ISM, RG wind,  AGB wind ($\dot{M} = 10^{-5}\;M_\odot/yr$,  t = 0.1 Myr), AGB wind (t = 0.25 Myr)}
-%        \label{windprof1}
-%    \end{center}\end{figure*}
+ \subsection{Low resolution runs}
+ 
+%\def\xilo{\basedir/bckreact_b5_n01_E1_M14_t3d3}
+%\def\xime{\basedir/weakxi4_b5_n01_E1_M14_t3d3}
+%\def\xihi{\basedir/seedxi5_b5_n01_E1_M14_t3d3}
+\def\xilo{\basedir/backreact6}
+\def\xime{\basedir/weakaccel6}
+\def\xihi{\basedir/testpart6}
+ \input{graphs}
+
+
+ \subsection{High resolution runs}
+
+%\def\xilo{\basedir/saptitan/backreact7}
+%\def\xime{\basedir/saptitan/weakaccel7}
+%\def\xihi{\basedir/saptitan/testpart7}
+% \input{graphs}
+
+\def\xilo{\basedir/saptitan/backreact8}
+\def\xime{\basedir/saptitan/weakaccel8}
+\def\xihi{\basedir/saptitan/testpart8}
+ \input{graphs}
+
+\subsection{Density slices}
+
+\FIGfo dens {\basedir/testpart6/_tmp008.png} {\basedir/backreact6/_tmp008.png}  {\basedir/saptitan/testpart8/_tmp008.png} {\basedir/saptitan/backreact8/_tmp008.png} [width=0.48\hsize] Slices of the density distribution in the shell. The models are Tycho SNR type at the age of 500 years. Top row --- low resolution run, bottom row --- higher resolution run. Left column --- test particle regime, right column --- models with cosmic ray acceleration included.
+
+\FIGfo dens \basedir/testpart6/_tmp021.png \basedir/backreact6/_tmp021.png  \basedir/saptitan/testpart8/_tmp021.png \basedir/saptitan/backreact8/_tmp021.png [width=0.48\hsize] Slices of the density distribution in the shell. The models are Tycho SNR type at the age of 500 years. Top row --- low resolution run, bottom row --- higher resolution run. Left column --- test particle regime, right column --- models with cosmic ray acceleration included.
+ 
+%    \FIG eng_t35 \xilo/eng_t.pdf [width=1.0\hsize] Temporal evolution of the energy. $\lg{\xi} = 3.5$. where $\xi$ defines an effective injection momentum through eq.~(25) in Blasi et al. (2005).  Legend: $E_\mt{th} = \int_V P(x)/(\gamma(x) - 1)\,d^3x$, $E_\mt{kin} = 1/2\int_V \rho(x)\,v(x)^2\,d^3x$, $E_\mt{sum} = E_\mt{th}+E_\mt{kin}$.
 
 %\section{Discussion}
 

@@ -109,7 +109,7 @@ subroutine init_hydro
                     if(ivar==1)then
                        xx = xx * user%d/code%d
                        if(ilevel>=levelmin.and.omega==2) xx = xx*a_t**3
-                       do i=1,ncache
+                       do i=1,ncache 
                           uold(ind_cell(i),1) = xx(i)
                        end do
                     else if(ivar>=2.and.ivar<=ndim+1)then

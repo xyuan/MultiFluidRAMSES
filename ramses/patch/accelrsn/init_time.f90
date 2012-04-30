@@ -34,6 +34,8 @@ subroutine init_time
   real(dp)::dr_max,dr_ratio,delta,cs
   character(LEN=128)::filename
 
+  integer::j, iampl
+
 
      if(cosmo)then
         ! Get cosmological parameters from input files
@@ -70,7 +72,21 @@ subroutine init_time
           SN%n = index_ejecta            ! ejecta index
           SN%s = index_wind              ! ambient medium index
           SN%q = n_ISM * cgs%mp/cgs%amu  ! normalization of ambient density [amu/cm^(3-s)]
-          
+          SN%nfr = n_freq                ! density pertrubation frequencies
+          SN%nph = n_phase               ! density pertrubation phases
+
+          iampl = 0
+	  ! count dimensions
+          do j=1,3
+             if (abs(SN%nfr(j)) > 1.d-5) iampl = iampl + 1
+          enddo
+          if (iampl > 0) then
+              SN%namp = 1.d0/iampl
+          else
+              SN%namp = 0.d0
+          endif
+
+
           comp_ISM = 10**(-comp_ISM)
           mu_d = 0
           mu_P = 0
@@ -105,7 +121,7 @@ subroutine init_time
           endif
           
           if(myid==1)then
-            SN_TECH%verbose =  2  ! level of verbosity (from 0 to 4)
+            SN_TECH%verbose =  5  ! level of verbosity (from 0 to 4)
           else
             SN_TECH%verbose = -1  ! strictly nothing
           endif
