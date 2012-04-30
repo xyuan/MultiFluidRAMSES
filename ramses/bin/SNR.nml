@@ -9,14 +9,14 @@ show_fields=0,1,2,3,4,5,6
 
 &AMR_PARAMS
 levelmin=4
-levelmax=6
-ngridmax=100000
+levelmax=9
+ngridmax=500000
 boxlen=0.6
 /
 
 &OUTPUT_PARAMS
-noutput=14
-tout=  50., 100., 200., 300., 400., 500., 600., 800., 1000., 1300., 1600., 2000., 2500., 3000.
+noutput=4
+tout=  100., 200., 300., 400.
 /
 
 &EM_PARAMS
@@ -38,7 +38,7 @@ Z_elt=14
 
 &ACCEL_PARAMS
 p_res=20
-xi_inj=5.0
+xi_inj=3.5
 eta_inj=-1
 E_max=-1
 x_frac=0.1

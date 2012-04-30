@@ -59,7 +59,8 @@ SAVE = source
 # --- MPI with openMPI on my Mac ---------------------
 FCOMP = mpif90
 #FFLAGS = -g -cpp -fno-underscoring -fbounds-check #-O -Wall #-Wunused #-Wuninitialized
-FFLAGS = -cpp -fno-underscoring -fbounds-check -O -Wall #-Wunused #-Wuninitialized
+FFLAGS = -cpp -fno-underscoring -fbounds-check -O3 -Wall #-Wunused #-Wuninitialized
+#FFLAGS = -cpp -fno-underscoring -fbounds-check -Wall #-Wunused #-Wuninitialized
 CCOMP = mpicc
 CFLAGS = #-g
 #############################################################################
