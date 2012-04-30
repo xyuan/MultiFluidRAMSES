@@ -70,7 +70,9 @@ subroutine init_time
           SN%n = index_ejecta            ! ejecta index
           SN%s = index_wind              ! ambient medium index
           SN%q = n_ISM * cgs%mp/cgs%amu  ! normalization of ambient density [amu/cm^(3-s)]
-          
+          SN%nfr = n_freq                ! density pertrubation frequencies
+          SN%nph = n_phase               ! density pertrubation phases
+
           comp_ISM = 10**(-comp_ISM)
           mu_d = 0
           mu_P = 0
@@ -105,7 +107,7 @@ subroutine init_time
           endif
           
           if(myid==1)then
-            SN_TECH%verbose =  2  ! level of verbosity (from 0 to 4)
+            SN_TECH%verbose =  5  ! level of verbosity (from 0 to 4)
           else
             SN_TECH%verbose = -1  ! strictly nothing
           endif
@@ -285,7 +287,7 @@ subroutine init_time
      Nmodel=-1
      if(.not. haardt_madau)Nmodel=2
      if(cosmo)then
-        call set_model(Nmodel,dble(J21*1d-21),-1.0d0,dble(a_spec),-1.0d0,-1.0d0,2, &
+        call set_model(Nmodel,dble(J21*1d-21),-1.0d0,dble(a_spec),-1.0d0,-1,2, &
              & dble(h0/100.),dble(omega_b),dble(omega_m),dble(omega_l), &
              & dble(aexp_ini),T2_sim)
         T2_start=T2_sim
@@ -293,7 +295,7 @@ subroutine init_time
            if(myid==1)write(*,*)'Starting with T/mu (K) = ',T2_start
         end if
      else
-        call set_model(Nmodel,dble(J21*1d-21),-1.0d0,dble(a_spec),-1.0d0,-1.0d0,2, &
+        call set_model(Nmodel,dble(J21*1d-21),-1.0d0,dble(a_spec),-1.0d0,-1,2, &
              & dble(70./100.),dble(0.04),dble(0.3),dble(0.7), &
              & dble(1.0),T2_sim)
      endif

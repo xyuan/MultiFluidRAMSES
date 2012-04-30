@@ -1,4 +1,4 @@
-!================================================!
+!====================u============================!
 ! ANALYTICAL HYDRO INITIAL CONDITIONS            !
 !================================================!
 ! subroutine condinit                            !
@@ -150,18 +150,23 @@ function f_init(x,dx,ivar)
   use amr_parameters
   use amr_commons
   use hydro_commons
-  use Chevalier,only:SNR_density,&          ! density
+  use Chevalier,only:SN,&                   ! SN structure
+                     SNR_density,&          ! density
+                     SNR_density_3D,&       ! density with ISM density flutuations
                      SNR_velocity,&         ! projected velocity
                      SNR_pressure,&         ! pressure
+                     SNR_pressure_3D,&      ! pressure  with ISM density flutuations
                      SNR_ejecta_fraction,&  ! ejecta tracer
                      SNR_shock_age,&        ! time since shocked
                      SNR_ionization_age,&   ! ionization tracer (sum of rho.dt)
-                     SNR_radiative_age      ! radiative losses tracer (sum of B^2.rho^1/3.dt)
+                     SNR_losses_age,&       ! radiative losses tracer (sum of B^2.rho^1/3.dt)
+                     SNR_particle_pressure  ! contribution to the total pressure from CR particles (Pcr/Ptot)
+  !                   SNR_radiative_age      ! radiative losses tracer (sum of B^2.rho^1/3.dt)
   implicit none
   real(dp)::f_init
-  real(dp)::x(1:3)
+  real(dp)::x(1:3),sx(1:3)
   real(dp)::dx
-  integer::ivar
+  integer::ivar,i
   ! converts SNR radial profiles (in cgs units) in cartesian profiles (in code units)
   ! (this mapper is useful because of the three velocity components)
   real(dp)::r
@@ -169,15 +174,21 @@ function f_init(x,dx,ivar)
   r = sqrt(x(1)**2+x(2)**2+x(3)**2)
   !r = floor(r/dx)*dx + dx/2. ! to have homogenuous shells
   !r = boxlen                 ! to fill the grid with ISM
+  do i=1,3 
+     !  x in code's units, nfr in user's 1/pc units. reducing everything to cgs
+     sx(i) = 2.0*3.14159265 * (x(i)*code%x * SN%nfr(i)/user%x) + SN%nph(i)*3.14159265  
+  enddo
   
   f_init = 0
   select case(ivar)
     case(1)
-      f_init = SNR_density(r*code%x) * cgs%amu / code%d
+      ! f_init = SNR_density(r*code%x) * cgs%amu / code%d
+      f_init = SNR_density_3D(r*code%x, sx, -1.d0) * cgs%amu / code%d
     case(2,3,4)
       f_init = SNR_velocity(r*code%x) * (x(ivar-1)/r) / code%u
     case(5)
-      f_init = SNR_pressure(r*code%x) / code%p
+      ! f_init = SNR_pressure(r*code%x) / code%p
+      f_init = SNR_pressure_3D(r*code%x, sx) / code%p
     case(VAR_f)
       f_init = SNR_ejecta_fraction(r*code%x)
     case(VAR_TS)
@@ -185,15 +196,47 @@ function f_init(x,dx,ivar)
     case(VAR_TI)
       f_init = SNR_ionization_age(r*code%x) / code%t
     case(VAR_TR)
-      f_init = SNR_radiative_age(r*code%x) / code%t
+      f_init = SNR_losses_age(r*code%x) / code%t
 #ifdef VAR_G
     case(VAR_G)
       f_init = 1D0/(gamma-1D0)
 #endif
+    case(VAR_W)
+      f_init = SNR_particle_pressure(r*code%x)
+      !if (t>1.0E+01 .and. f_init>0.7) write(*,*) 'time = ',t,'   *** CASE VAR_W ***', r, f_init
   end select
   return
   
 end function f_init
+!###########################################################
+!###########################################################
+!###########################################################
+!###########################################################
+function Density_ISM(x,dd0)
+  use amr_parameters
+  use amr_commons
+  use hydro_commons
+  use Chevalier,only:SN,&                   ! SN structure
+                     SNR_density_3D         ! density with ISM density flutuations
+  implicit none
+  real(dp)::Density_ISM
+  real(dp)::x(1:3),sx(1:3)
+  real(dp)::xa(1:3)
+  real(dp)::dd0
+  integer::i
+  real(dp)::r
+
+  do i=1,3 
+     xa(i) = x(i)*a_t
+     !  x in code's units, nfr in user's 1/pc units. reducing everything to cgs
+     sx(i) = 2.0*3.14159265 * (xa(i)*code%x * SN%nfr(i)/user%x) + SN%nph(i)*3.14159265 
+  enddo
+  r = sqrt(xa(1)**2+xa(2)**2+xa(3)**2)
+
+  Density_ISM = SNR_density_3D(r*code%x, sx, dd0) * cgs%amu / code%d
+  return
+  
+end function Density_ISM
 !###########################################################
 !###########################################################
 !###########################################################

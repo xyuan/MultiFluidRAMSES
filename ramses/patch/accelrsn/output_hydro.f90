@@ -131,6 +131,11 @@ subroutine backup_hydro(filename)
 #else
                        xdp(i)=uold(ind_cell(i),ivar)/uold(ind_cell(i),1)
 #endif
+                       if(ivar==VAR_W)then
+                          call save_wcr(position(ind_cell(i),1:3),dx,ind_cell(i))
+                          xdp(i)=uold(ind_cell(i),ivar)/uold(ind_cell(i),1)
+                          ! if (xdp(i) > 0.5) write(*,*) 'output_hydro::: ', i, ind_cell(i), '==== ',xdp(i),' ===='
+                       endif
                     end do
                  endif
                  write(ilun)xdp

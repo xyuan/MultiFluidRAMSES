@@ -23,6 +23,15 @@ subroutine boundana(x,u,dx,ibound,ncell)
   use hydro_parameters, ONLY: nvar,boundary_var,gamma,B_ISM
   use const
   implicit none
+
+  interface
+    function Density_ISM(x,dd)  ! arbitrary density function
+      real*8::Density_ISM       !   value
+      real*8::x(1:3)            !   position
+      real*8::dd                !   norm
+    end function
+  end interface
+
   integer ::ibound                        ! Index of boundary region
   integer ::ncell                         ! Number of active cells
   real(dp)::dx                            ! Cell size
@@ -46,7 +55,10 @@ subroutine boundana(x,u,dx,ibound,ncell)
     ! theoretical boundary values
 
     ! density
-    q(i,1) = d_th
+    ! arbitrary density map d_th is transformed, what about x(i,:)? should be rescaled
+    q(i,1) = Density_ISM(x(i,:), d_th)
+    ! write(*,*) i, 'x =', x(i,:), d_th, q(i,1)
+    ! q(i,1) = d_th
     ! velocity
     q(i,2:ndim+1) = - H_th_new * x(i,1:ndim)
     ! pressure
@@ -87,7 +99,7 @@ subroutine mimic_solver_stepbystep(x,u,f,div,dx,dt,ncell)
   real(dp),dimension(1:nvector,1:ndim)::f ! Gravitational force
   real(dp),dimension(1:nvector)::div      ! -div(u).dx
   real(dp)::dx                            ! Cell size
-  real(dp)::dt							              ! Time-step
+  real(dp)::dt                            ! Time-step
   integer ::ncell                         ! Number of active cells
   
   real(dp),dimension(1:nvar,-1:+1)::q_cell       ! cell-centred values (-1: current cell, +1: next cell)

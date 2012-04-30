@@ -9,14 +9,25 @@ show_fields=0,1,2,3,4,5,6
 
 &AMR_PARAMS
 levelmin=4
+<<<<<<< HEAD
 levelmax=9
 ngridmax=500000
+=======
+levelmax=6
+ngridmax=30000
+>>>>>>> cc97649c9f6a0ee496c68c4a5f6fe257af3a6e84
 boxlen=0.6
 /
 
 &OUTPUT_PARAMS
+<<<<<<< HEAD
 noutput=4
 tout=  100., 200., 300., 400.
+=======
+noutput=24
+tout=  50., 100., 150., 200., 250., 300., 350., 400., 450., 500., 600., 700., 800., 900., 1000., 
+1200., 1400., 1600., 1800., 2000., 2300., 2600., 2900., 3200
+>>>>>>> cc97649c9f6a0ee496c68c4a5f6fe257af3a6e84
 /
 
 &EM_PARAMS
@@ -46,8 +57,8 @@ B_ISM=5.0
 D_norm=3e22
 D_slope=-1
 zeta=0
-do_accel=.true.
-do_backreact=.true.
+do_accel=.false.
+do_backreact=.false.
 /
 
 &SNR_PARAMS
@@ -59,6 +70,8 @@ n_ISM=0.1
 T_ISM=1e4
 index_ejecta=7
 index_wind=0
+n_freq = 0.03, 0.0, 0.0
+n_phase = 0.6, 0.0, 0.0
 lambda=-1
 omega=2
 ! element        H        He       C        N        O        Ne       Na       Mg       Al       Si       S        Ar       Ca       Fe       Ni

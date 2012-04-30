@@ -1088,7 +1088,7 @@ function when_shocked(time_since_shocked)
   integer::when_shocked,i,i_min,i_max,iter,iter_max=100
   
   shock_age = t_phys*code%t - time_since_shocked
-!write(*,*)'looking for time ',shock_age/cgs%yr,' in history range ',history(0)%tS/cgs%yr,' - ',history(nstep)%tS/cgs%yr
+  ! write(*,*)'looking for time ',shock_age/cgs%yr,' in history range ',history(0)%tS/cgs%yr,' - ',history(nstep)%tS/cgs%yr
 
   if(shock_age>history(nstep)%tS)then
   
@@ -1138,6 +1138,7 @@ function when_shocked(time_since_shocked)
 !write(*,*)'iter = ',iter,': i = (',i_min,'+',i_max,')/2 = ',i,': tS = ',history(i)%tS/cgs%yr,' yr'
     enddo
     if(iter>iter_max)then
+      write(*,*) shock_age
       write(*,*)'! Error in when_shocked(): unable to find history record for time ',shock_age/cgs%yr,' yr in ',iter,' iterations'
       call clean_stop
     endif

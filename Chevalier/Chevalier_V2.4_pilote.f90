@@ -1,11 +1,14 @@
 !===========================================================================================!
-! Chevalier's model for young supernova remnants                                      v 2.1 !
+! Chevalier's model for young supernova remnants                                      v 2.4 !
 !===========================================================================================!
 ! simple test program for the module                                                        !
 !===========================================================================================!
-! Gilles Ferrand (CEA/Irfu/SAp)                                                             !
-! 2010/08: first version from scratch                                                       !
-! 2010/10: modified definition of composition                                               !
+! Gilles Ferrand (CEA/Irfu/SAp, University of Manitoba)                                     !
+! V2.0  2010/08  first version from scratch                                                 !
+! V2.1  2010/10  modified definition of composition                                         !
+! V2.2  2012/03  added TECH%step, corrected velocity unit                                   !
+! V2.3  2012/03  added output of particles quantities w and g                               !
+! V2.4  2012/03  changed helper function names for ages                                     !
 !===========================================================================================!
 
 
@@ -21,9 +24,9 @@ program Chevalier
     SN%t = 10.    ! age [yr]
     SN%E = 1.     ! ejecta kinetic energy [1e44 J = 1e51 erg]
     SN%M = 1.4    ! ejecta mass [solar masses]
-    SN%n = 7      ! ejecta index
-    SN%s = 0      ! ambient medium index
-    SN%q = 0.1    ! normalization of ambient density [amu/cm^(3-s)]
+    SN%n = 7!9      ! ejecta index
+    SN%s = 0!2      ! ambient medium index
+    SN%q = 0.1!/(pc)**(-SN%s)    ! normalization of ambient density [amu/cm^(3-s)]
     SNR(-1:+1)%x(1) = 0.7  ! Hydrogen mass fraction
     SNR(-1:+1)%x(2) = 0.3  ! Helium   mass fraction
     
@@ -33,20 +36,21 @@ program Chevalier
     ! if conditions are prescribed (without escape) ! ONLY ONE OF THE FOUR MUST BE SET
     DSA(-1:+1)%Rtot    = -4     ! total compression ratio of the modified shock
     DSA(-1:+1)%Geff    = -5/3.  ! adiabatic index of a pseudo-fluid which would give a compression Rtot at the shock
-    DSA(-1:+1)%Pc_Ptot = 1d-9   ! pression of relativistic particles Pc, as a fraction of the total pressure Pg+Pc
+    DSA(-1:+1)%Pc_Ptot = 1e-9   ! pression of relativistic particles Pc, as a fraction of the total pressure Pg+Pc
     DSA(-1:+1)%Pg2_Pd0 = -0.75  ! downstream gas pressure Pg normalized to the upstream dynamic pressure Pd = rho.uS^2
     ! if conditions are calculated by a model (which includes escape)
     DSA(+1)%xi      = 3.5       ! pinj/pth2 at the forward shock
     DSA(-1)%xi      = 6         ! pinj/pth2 at the reverse shock
     DSA(-1:+1)%pinj = -1        ! injection momentum (if <=0, will be computed from xi)
     DSA(-1:+1)%eta  = -1        ! injection level    (if <=0, will be computed from xi)
+    DSA(-1:+1)%Emax = -1        ! maximum energy (if <=0, will be computed from age and size)
     DSA(-1:+1)%B0   = 1d-6      ! upstream magnetic field [G]
-    DSA(-1:+1)%zeta = 0         ! level of wave damping [from 0 to 1]
+    DSA(-1:+1)%zeta = 1         ! level of wave damping [from 0 to 1]
     DSA(-1:+1)%T0   = 1d4       ! upstream temperature [K]
     
     ! set technical parameters
     
-    TECH%verbose = 4  ! level of verbosity (from 0 to 4)
+    TECH%verbose = 2  ! level of verbosity (from 0 to 4)
     TECH%step = 1d-3  ! integrator step: defines (variable) resolution in radius
     
     ! compute profiles
@@ -91,27 +95,33 @@ program Chevalier
                    25x,"5",&
                    25x,"6",&
                    25x,"7",&
-                   25x,"8")')
-        write(30,'( 2x,"r [pc]"           ,&
-                   21x,"d [amu/cm3]"      ,&
-                   15x,"u [km/s]"         ,&
-                   17x,"P [dynes/cm2]"    ,&
-                   14x,"f"                ,&
-                   25x,"tS [yr]"          ,&
-                   19x,"n_tS [amu/cm3.yr]",&
-                    9x,"B [muG]"          ,&
-                   19x,"B2rho1/3_tS [muG2.uma1/3.yr]"  )')
+                   25x,"8",&
+                   25x,"9",&
+                   25x,"10")')
+        write(30,'( 2x,"r [pc]"         ,&
+                   21x,"d [amu/cm3]"    ,&
+                   15x,"u [km/s]"       ,&
+                   17x,"P [dynes/cm2]"  ,&
+                   14x,"w"              ,&
+                   25x,"g"              ,&
+                   25x,"f"              ,&
+                   25x,"tS [yr]"        ,&
+                   19x,"n_tS [yr]"      ,&
+                    9x,"B [muG]"        ,&
+                   19x,"B2rho1/3_tS [yr]")')
         do i=0,N
             r = (i/(1d0*N)) * r_max ! [cm]
             write(30,*)r/pc, &
                        SNR_density(r)          , &
                        SNR_velocity(r)/1d5     , &
                        SNR_pressure(r)         , &
+                       SNR_particle_pressure(r), &
+                       SNR_gamma(r)            , &
                        SNR_ejecta_fraction(r)  , &
                        SNR_shock_age(r)/yr     , &
                        SNR_ionization_age(r)/yr, &
                        SNR_mag_field(r)*1e6    , &
-                       SNR_radiative_age(r)*1e12/yr
+                       SNR_losses_age(r)/yr
         enddo
         close(unit = 30)
         

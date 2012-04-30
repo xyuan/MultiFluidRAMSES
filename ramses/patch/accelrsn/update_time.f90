@@ -124,6 +124,8 @@ subroutine update_time(ilevel)
      if(t>=tout(noutput).or.aexp>=aout(noutput).or.nstep_coarse>=nstepmax)then
         if(myid==1)then
            write(*,*)'Run completed'
+           write(*,*) noutput, ',  t=',t,',  tout=', tout(noutput),', aout=', aout(noutput)
+           write(*,*) 'nstep_coarse >= nstepmax: ',nstep_coarse, nstepmax
 #ifndef WITHOUTMPI
            ttend=MPI_WTIME(info)
            write(*,"('Total elapsed time:',I8,' seconds = ',F8.1,' minutes = ',F6.1,' hours = ',F5.1,' days')")&

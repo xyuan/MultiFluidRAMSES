@@ -1,0 +1,152 @@
+April 24, 2012 9:14:15 PM GMT+02:00
+
+-----
+Blasi
+-----
+
+The Blasi module solves the coupled system f(p) - U(p), where f(p) is the
+particle distribution function as a function of momentum p, and U(p) is the
+velocity of the fluid as seen by particles at the (implicit) distance x
+travelled upstream of the shock front (x is unequivocally related to p for
+any given diffusion coefficient). Knowing f(p), one can compute various
+properties of the particles considered as a fluid (this is done in
+compute_cr_fluid()):
+- Pcr : particle pressure (at the shock);
+- Wcr = Pcr / (P2+Pcr) : relative particle pressure (just downstream of the
+- shock);
+- Ecr : particle internal energy;
+- Gcr = 1+Pcr/Ecr : particle adiabatic index (around 4/3).
+
+Note that all these quantities are obtained at the shock (although it is
+possible to model a-posteriori the profiles upstream or downstream), and are
+independent of time (only a quasi-steady state is found, which implicitly
+assumes that some sort of fluid-particle equilibrium can be reached).
+
+---------
+Chevalier
+---------
+
+The Chevalier module computes hydro profiles of the SNR in the self-similar
+regime. It works internally with the following quantities:
+- "Ptot" = Pg+Pc : total pressure;
+- "C2" = Cs^2 = γ.Pg/ρ : gas sound speed squared;
+- "vv" = velocity;
+- "PcPg" = Pc/Pg : ratio of pressures.
+All these quantities are defined as a function of eta = t×r^(-1/lambda)
+- where lambda = (n-3)/(n-s) (defined so that the scale factor a(t) ∝
+- t^lambda, caution that's the inverse of L in Anne's thesis).
+
+These quantities (stored in SNR(iSh)) are integrated from the shock to the
+contact discontinuity, on each side (integrate_equations()). One therefore
+needs boundary conditions at the shocks (see set_boundary_conditions()). For
+the particles, this requires knowledge of the following 3 quantities (stored
+in DSA(iSh)):
+- "Rtot" > 1 : total compression ratio;
+- "Pg2_Pd0" = Pg2 / ρ0.u0^2 ∈ [0,0.75] : gas pressure normalized by the
+- upstream dynamic pressure;
+- "Pc_Ptot" = Pc/(Pg+Pc) ∈ [0,1] : relative fraction of particle pressure.
+These quantities can either be prescribed by hand, either calculated with an
+- acceleration model (only Blasi's now, Berezhko & Ellison's was used
+- before). 
+- if shock_conditions = 'prescribed': you have to set only one of the 3
+- quantities, the others are computed with the formulae given in
+- set_accel(), assuming there is no escape of particles. Note that you can
+- also use a 4th quantity: "Geff" = γ_eff : effective adiabatic index, which
+- is directly related to Rtot.
+- if shock_conditions = 'calculated': because it includes escape, the model
+- (called in compute_acceleration()) provides separately the 3 quantities
+- needed (stored in OUT(i_sol)) : Rtot is Rtot, Pc_Ptot is called Wcr,
+- Pg2_Pd0 is computed from the gas pressure P2.
+
+Once self-similar profiles have been found, they are transformed back to
+physical profiles (by make_physical()): 
+- "d" : gas density (particles are assumed to be negligible);
+- "u" : gas velocity;
+- "P" : gas pressure;
+- "w" = (Pc/Pg)/[1+(Pc/Pg)] =  Pc / (Pg+Pc) : relative particle pressure.
+These quantities are function of radius r, they are stored as arrays in
+- SNR(iSh), they can be spline-interpolated at any radius using the helper
+- functions SNR_*():
+- SNR_density(r) gives d(r);
+- SNR_velocity(r) gives u(r);
+- SNR_pressure(r) gives P(r)/[1-w(r)] = total pressure;
+- SNR_particle_pressure(r) gives w(r).
+
+------
+Ramses
+------
+
+The Chevalier module is used to initialise hydro profiles in Ramses at some
+(small) age (with the SNR_*() functions, in f_init() in condinit.f90). Then
+the profiles are evolved by the hydrodynamic solver up to the requested age.
+The Chevalier module is no longer of any use at this point. The Blasi module
+is still used, at each time-step, to compute the acceleration at the
+(average) forward shock, in order to apply the back-reaction of particles.
+In Ramses the pressure is always the total pressure, the pressure of the
+pseudo fluid. It is possible, to some extent, to separate the two components
+in the shocked region, knowing the conditions at the shock (they are stored
+in history), and assuming some evolution downstream of the shock. I need to
+do this to get the temperature of the ions in the shocked ISM, in order to
+compute the thermal emission (see get_parameters() in emission.f90 -- and
+get_temperatures() in the more recent version attached, which contains an
+improved treatment of the electron and total densities). The assumption made
+is that the thermal fluid evolves adiabatically in the pseudo-fluid profiles
+with its own gamma = 5/3. This is far from being perfect, as in reality
+thermal and non-thermal populations would evolve on their own, but I think
+one can't do much better with a pseudo-fluid approach. Ideally, one would
+need a multi-fluid approach, where the gas, accelerated protons, and
+accelerated electrons, are handled separately by the hydro code (this was
+planned from the start of the project, but is no longer a priority). You can
+discuss this topic more with Anne.
+
+
+===================
+January 30, 2012 6:56:21 PM GMT+01:00
+
+Did you look into the acceleration stuff already? (of course you can
+compute the thermal emission of the remnant without considering the effect
+of particles, however you need to set do_accel=.true. because it activates
+the necessary shock tracking mechanism.) Also, keep in mind that the
+computation of the emission, although integrated right into Ramses, is
+entirely post-processing of the hydro data, so you can compute the SNR
+evolution until a given age with do_emission=.false., and then compute the
+emission at the final age with nrestart = your_last_output and
+do_emission=.true. (then you can play will all the parameters in the
+EM_PARAMS block, but not change anything else).
+
+Emission data are written alongside other output data, prefixed with "em"
+instead of "amr" or "hydro". They come in 4 flavours: 
+- "cut": maps that are slices in a plane perpendicular to the l.o.s.;
+- "prj": maps that are projections of all planes along the l.o.s.;
+These 2 outputs are 3D data cubes: for the emission it's (x, y, E), with the
+- 3rd dimension being the energy bins as defined by Eph_th in the parameters
+- file. With that you can extract spectra in a given region, or make an
+- image of the remnant in a given energy band. Note that here the emission
+- is the sum over all elements (or the emission of a single element if you
+- specify Z_elt in the parameters) -- I am not outputting the full data set
+- (x,y,E,elt) as it would be huge (but see more on elements below). There is
+- one file for the continuum emission ("THct") and one file for the total
+- emission = continuum + lines ("THtt"). The energy range and resolution is
+- indicated in the filename.
+You also have the same data cubes for the hydro diagnostics ("diag"): then
+- it's (x,y,i), where i is the index of the 17 quantities of interest (see
+- emission.f90). And I recently added maps of the mean electric charge of
+- the elements ("THzz"): here it's (x,y,elt).
+- "spc": spectra integrated over the whole remnant, for each element
+- considered in the emission code. These data are 2D arrays (elt, em). Note:
+- summing the spectra of all these elements should be the same as summing
+- the spectra of all the cells of the "prj" data. Here again you have the
+- distinction between "THct" and "THtt".
+- "prf": average radial profiles of some quantities used to compute the
+- emission (of the "diag" type).
+
+Except "prf" files that are simple text files, all the emission files
+contain raw Fortran binary data. You can easily load them with IDL (readu)
+or numpy (fromfile), but SDvision won't be of any help: these data are not
+in the Ramses format. Besides, they are not in 3D: the AMR structure is
+already projected on a plane (with a new dimension being the energy).
+
+Regarding the non-thermal emission, the mechanism is the same, with "NTpi"
+for pion decay, "NTsy" for synchrotron and "NTic" for inverse Compton. But
+it's a little too early to discuss the results, it's still a work in
+progress (a second emission paper is planned later this year).

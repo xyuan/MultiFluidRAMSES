@@ -4,10 +4,10 @@
 !===========================================================================================!
 ! ACCELERATION routines                                                                     !
 !===========================================================================================!
-! Gilles Ferrand (CEA/Irfu/SAp)                                                             !
-! 2010/08: wrote F90 module from F77 version of Anne Decourchelle                           !
-! 2010/10: added recipe for the magnetic field                                              !
-! 2010/11: corrected a bug in the initialisation of loop counter and criterion              !
+! Gilles Ferrand (CEA/Irfu/SAp, University of Manitoba)                                     !
+! V2.0  2010/08  wrote F90 module from F77 version of Anne Decourchelle                     !
+! V2.1  2010/10  added recipe for the magnetic field                                        !
+!       2010/11  corrected a bug in the initialisation of loop counter and criterion        !
 !===========================================================================================!
 
 

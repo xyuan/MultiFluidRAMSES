@@ -31,6 +31,9 @@ module hydro_parameters
   real(dp)::comp_ej (0:15) ! ejecta composition: absolute mass (for a progenitor of mass comp_ej(0))
   real(dp)::mu_d           ! density  enhancement factor mu_d = 1 + 4*x_He, such that rho = mu_d nH.mp
   real(dp)::mu_P           ! pressure enhancement factor mu_P = 2 + 3*x_He, such that   P = mu_P nH.kB.T 
+
+  real(dp),dimension(1:NDIM)::n_freq   ! ISM spacial fluctuation frequencies dim=1:3
+  real(dp),dimension(1:NDIM)::n_phase  ! ISM spacial fluctuation phases dim=1:3
   
   ! acceleration parameters
   integer::p_res=10             ! momentum resolution: number of bins per decade
@@ -70,6 +73,13 @@ module hydro_parameters
   integer,parameter::VAR_TS= 7 ! shocked age
   integer,parameter::VAR_TI= 8 ! ionization age
   integer,parameter::VAR_TR= 9 ! radiative age
+
+#ifdef VAR_G
+  integer,parameter::VAR_W= 11 ! cosmic-ray pressure
+#else
+  integer,parameter::VAR_W= 10 ! cosmic-ray pressure
+#endif
+
 #else
   integer,parameter::nvar=ndim+2
 #endif
@@ -122,6 +132,7 @@ module hydro_parameters
   real(dp)::difmag=0.0d0
   real(dp)::smallc=1.d-10
   real(dp)::smallr=1.d-10
+  real(dp)::eta_mag=0.0d0
   character(LEN=10)::scheme='muscl'
   character(LEN=10)::riemann='llf'
 
