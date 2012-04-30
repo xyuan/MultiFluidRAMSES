@@ -19,7 +19,7 @@
 ! V2.2  2012/02  replaced pointers with allocatables                                        !
 !       2012/03  spline interpolation of the profiles                                       !
 ! V2.3           added helper functions for particle quantities w and g                     !
-! V2.4  2012/04  history of shocked cells, better estimates of ages and B                   !
+! V2.4           history of shocked cells                                                   !
 !===========================================================================================!
 
 
@@ -110,13 +110,12 @@ module Chevalier
         real*8,allocatable::tS(:),spline_tS(:)  ! shocking age = time since shocked [SN%t]
         real*8,allocatable::tI(:),spline_tI(:)  ! ionization age = density-weighted time since shocked [SN%t]
         real*8,allocatable::tL(:),spline_tL(:)  ! losses age = magnetic field- and density-weighted time since shocked [SN%t]
-        real*8,allocatable::B(:) ,spline_B (:)  ! magnetic field
         real*8::dr_min                          ! minimum space resolution [cm]
         real*8::dr_max                          ! maximum space resolution [cm]
-!        ! history of the shock
-!        real*8,allocatable::tSh(:)                ! time (since explosion) [SN%t]
-!        real*8,allocatable::rSh(:),spline_rSh(:)  ! radius  [cm]
-!        real*8,allocatable::dSh(:),spline_dSh(:)  ! downstream density [amu/cm3]
+        ! history of the shock
+        real*8,allocatable::tSh(:)                ! time (since explosion) [SN%t]
+        real*8,allocatable::rSh(:),spline_rSh(:)  ! radius  [cm]
+        real*8,allocatable::dSh(:),spline_dSh(:)  ! downstream density [amu/cm3]
     end type
     type(SNR_struct),save::SNR(-1:+1)
     
@@ -187,46 +186,50 @@ end subroutine Chevalier_profiles
     
     implicit none
     
-    integer::iSh     ! which shock: -1 = reverse, +1 = forward
-    integer::j1,j2   ! which cells
-    real*8::r_ratio  !  r   /   r_Sh
-    real*8::d_ratio  ! d(r) / d(r_Sh)
+    integer::iSh    ! which shock: -1 = reverse, +1 = forward
+    integer::j1,j2  ! which cells
 logical::debug=.false.
+real*8::r_norm  ! radius  in units of the shock radius : r_norm = r / r_Sh
+real*8::d_norm  ! density in units of the shock density: d_norm = d(r) / d(r_Sh)
     
     if(TECH%verbose>=2)write(*,*)"COMPUTE_AGES()"
     
     do iSh=-1,+1,+2 
-!        ! shock history
-!        if(allocated(SNR(iSh)%tSh)) deallocate(SNR(iSh)%tSh)
-!        if(allocated(SNR(iSh)%rSh)) deallocate(SNR(iSh)%rSh)
-!        if(allocated(SNR(iSh)%dSh)) deallocate(SNR(iSh)%dSh)
-!        allocate(SNR(iSh)%tSh(0:SNR(iSh)%N))
-!        allocate(SNR(iSh)%rSh(0:SNR(iSh)%N))
-!        allocate(SNR(iSh)%dSh(0:SNR(iSh)%N))
-!        do j2=0,SNR(iSh)%N
-!            SNR(iSh)%tSh(j2) = x_adiab('t',iSh,0,j2)
-!            SNR(iSh)%rSh(j2) = x_adiab('r',iSh,0,j2)*SNR(iSh)%r(j2)
-!            SNR(iSh)%dSh(j2) = x_adiab('d',iSh,0,j2)*SNR(iSh)%d(j2)
-!write(*,*)"j2 = ",j2," : t_Sh = ",SNR(iSh)%tSh(j2)*SN%t,", r_Sh = ",SNR(iSh)%rSh(j2)/pc,", d_Sh = ",SNR(iSh)%dSh(j2)
-!        enddo
-!        call spline_ini(SNR(iSh)%tSh, SNR(iSh)%rSh, SNR(iSh)%spline_rSh)
-!        call spline_ini(SNR(iSh)%tSh, SNR(iSh)%dSh, SNR(iSh)%spline_dSh)
-        ! ages
-        if(allocated(SNR(iSh)%tS)) deallocate(SNR(iSh)%tS)
-        if(allocated(SNR(iSh)%tI)) deallocate(SNR(iSh)%tI)
-        if(allocated(SNR(iSh)%tL)) deallocate(SNR(iSh)%tL)
-        if(allocated(SNR(iSh)%B )) deallocate(SNR(iSh)%B )
-        allocate(SNR(iSh)%tS(0:SNR(iSh)%N))
-        allocate(SNR(iSh)%tI(0:SNR(iSh)%N))
-        allocate(SNR(iSh)%tL(0:SNR(iSh)%N))
-        allocate(SNR(iSh)%B (0:SNR(iSh)%N))
+        if(allocated(SNR(iSh)%tS )) deallocate(SNR(iSh)%tS )
+        if(allocated(SNR(iSh)%tI )) deallocate(SNR(iSh)%tI )
+        if(allocated(SNR(iSh)%tL )) deallocate(SNR(iSh)%tL )
+        if(allocated(SNR(iSh)%tSh)) deallocate(SNR(iSh)%tSh)
+        if(allocated(SNR(iSh)%rSh)) deallocate(SNR(iSh)%rSh)
+        if(allocated(SNR(iSh)%dSh)) deallocate(SNR(iSh)%dSh)
+        allocate(SNR(iSh)%tS (0:SNR(iSh)%N))
+        allocate(SNR(iSh)%tI (0:SNR(iSh)%N))
+        allocate(SNR(iSh)%tL (0:SNR(iSh)%N))
+        allocate(SNR(iSh)%tSh(0:SNR(iSh)%N))
+        allocate(SNR(iSh)%rSh(0:SNR(iSh)%N))
+        allocate(SNR(iSh)%dSh(0:SNR(iSh)%N))
+        ! shock history
+        do j2=0,SNR(iSh)%N
+            SNR(iSh)%tSh(j2) = x_adiab('t',iSh,0,j2)
+            SNR(iSh)%rSh(j2) = x_adiab('r',iSh,0,j2)*SNR(iSh)%r(j2)
+            SNR(iSh)%dSh(j2) = x_adiab('d',iSh,0,j2)*SNR(iSh)%d(j2)
+if(debug)then
+write(*,*)"j2 = ",j2," : t_Sh = ",SNR(iSh)%tSh(j2)*SN%t,", r_Sh = ",SNR(iSh)%rSh(j2)/pc,", d_Sh = ",SNR(iSh)%dSh(j2)
+endif
+        enddo
+        call spline_ini(SNR(iSh)%tSh, SNR(iSh)%rSh, SNR(iSh)%spline_rSh)
+        call spline_ini(SNR(iSh)%tSh, SNR(iSh)%dSh, SNR(iSh)%spline_dSh)
         do j2=0,SNR(iSh)%N
             ! shocking age tS
             SNR(iSh)%tS(j2) = 1-x_adiab('t',iSh,0,j2)
-            ! magnetic field (assuming shock modifications were the same before)
-            r_ratio = 1. / x_adiab('r',iSh,0,j2)
-            d_ratio = 1. / x_adiab('d',iSh,0,j2)
-            SNR(iSh)%B(j2) = B2(SNR(iSh)%B2,r_ratio,d_ratio,DSA(iSh)%Rtot)
+if(debug)then
+r_norm = SNR(iSh)%r(j2)/SNR(iSh)%r(0)
+d_norm = SNR(iSh)%d(j2)/SNR(iSh)%d(0)
+write(*,*)"j2 = ",j2,": tS = ",SNR(iSh)%tS(j2)*SN%t,&
+          ", r/r_Sh = ",r_norm,&
+          ", d/d_Sh = ",d_norm,&
+          ", P.d^-g = ",SNR(iSh)%P(j2)*SNR(iSh)%d(j2)**(-SN%g),&
+          ", B/B_Sh = ",B2(SNR(iSh)%B2,r_norm,d_norm,DSA(iSh)%Rtot)/SNR(iSh)%B2
+endif
             ! ionization age tI = sum of n.dt from 0 to tS, losses age = sum of B^2.(n/nSh)^1/3 from 0 to tS
             do j1=0,j2
                 if(j1==0)then
@@ -240,28 +243,23 @@ logical::debug=.false.
                                     + (integrand('L',iSh,j1,j2) + integrand('L',iSh,j1-1,j2))/2 &
                                     * (x_adiab  ('t',iSh,j1,j2) - x_adiab  ('t',iSh,j1-1,j2))
                 endif
-                if(debug)then
-                    r_ratio = x_adiab('r',iSh,j1,j2) / x_adiab('r',iSh,0,j2)
-                    d_ratio = x_adiab('d',iSh,j1,j2) / x_adiab('d',iSh,0,j2)
-                    write(*,*)"     j1 = ",j1,": tS = ",(x_adiab('t',iSh,j1,j2)-x_adiab('t',iSh,0,j2))*SN%t,&
-                              ": r(t)/r_Sh(tS) = ",r_ratio,&
-                              ", d(t)/d_Sh(tS) = ",d_ratio,&
-                      ", P(t).d(t)^-g = ",(x_adiab('P',iSh,j1,j2)*SNR(iSh)%P(j2))*(x_adiab('d',iSh,j1,j2)*SNR(iSh)%d(j2))**(-SN%g),&
-                              ", B(t)/B_Sh(t) = ",B2(SNR(iSh)%B2,r_ratio,d_ratio,DSA(iSh)%Rtot)/SNR(iSh)%B2
-                             !", tL = ",SNR(iSh)%tL(j2)*SN%t
-                             !", tI = ",SNR(iSh)%tI(j2)*SN%t,&
-                             !", d.tS = ",x_adiab('d',iSh,j1,j2)*SNR(iSh)%d(j2)*(x_adiab('t',iSh,j1,j2)-x_adiab('t',iSh,0,j2))*SN%t
-                endif
-            enddo ! j1
-            if(debug)then
-                write(*,*)"cell j2 = ",j2,": tS = ",SNR(iSh)%tS(j2)*SN%t,&
-                          ", r(t)/r_Sh(tS) = ",r_ratio,&
-                          ", d(t)/d_Sh(tS) = ",d_ratio,&
-                          ", P(t).d(t)^-g = ",SNR(iSh)%P(j2)*SNR(iSh)%d(j2)**(-SN%g),&
-                          ", B(t)/B_Sh(t) = ",SNR(iSh)%B(j2)/SNR(iSh)%B2
-            endif
-        enddo ! j2
-    enddo ! iSh
+if(debug)then
+r_norm = x_adiab('r',iSh,j1,j2)*SNR(iSh)%r(j2) &
+       / spline_int(x_adiab('t',iSh,j1,j2),SNR(iSh)%tSh(:),SNR(iSh)%rSh(:),SNR(iSH)%spline_rSh(:))
+d_norm = x_adiab('d',iSh,j1,j2)*SNR(iSh)%d(j2) &
+       / spline_int(x_adiab('t',iSh,j1,j2),SNR(iSh)%tSh(:),SNR(iSh)%dSh(:),SNR(iSH)%spline_dSh(:))
+write(*,*)j1,": tS = ",(x_adiab('t',iSh,j1,j2)-x_adiab('t',iSh,0,j2))*SN%t,&
+             ": r/r_Sh = ",r_norm,&
+             ", d/d_Sh = ",d_norm,&
+             ", P.d^-g = ",(x_adiab('P',iSh,j1,j2)*SNR(iSh)%P(j2))*(x_adiab('d',iSh,j1,j2)*SNR(iSh)%d(j2))**(-SN%g),&
+!             ", B/B_Sh = ",B2(SNR(iSh)%B2,r_norm,d_norm,DSA(iSh)%Rtot)/SNR(iSh)%B2,&
+!            ", tL = ",SNR(iSh)%tL(j2)*SN%t
+             ", tI = ",SNR(iSh)%tI(j2)*SN%t,&
+             ", d.tS = ",x_adiab('d',iSh,j1,j2)*SNR(iSh)%d(j2)*(x_adiab('t',iSh,j1,j2)-x_adiab('t',iSh,0,j2))*SN%t
+endif
+            enddo
+        enddo
+    enddo
     
     contains
     
@@ -273,14 +271,20 @@ logical::debug=.false.
         integer::j1,j2         ! indices of initial and final state
         ! output
         real*8:: integrand
+        ! locals
+        real*8::r_norm  ! radius  in units of the shock radius : r_norm = r / r_Sh
+        real*8::d_norm  ! density in units of the shock density: d_norm = d(r) / d(r_Sh)
         
         select case(var)
             case('I')
                 integrand = x_adiab('d',iSh,j1,j2) * SNR(iSh)%d(j2) / SNR(+1)%d0
             case('L')
-                r_ratio = x_adiab('r',iSh,j1,j2) / x_adiab('r',iSh,0,j2)
-                d_ratio = x_adiab('d',iSh,j1,j2) / x_adiab('d',iSh,0,j2)
-                integrand = (B2(SNR(iSh)%B2,r_ratio,d_ratio,DSA(iSh)%Rtot) / DSA(+1)%B0)**2 * d_ratio**(1/3.)
+                r_norm = x_adiab('r',iSh,j1,j2)*SNR(iSh)%r(j2) &
+                       / spline_int(x_adiab('t',iSh,j1,j2),SNR(iSh)%tSh(:),SNR(iSh)%rSh(:),SNR(iSH)%spline_rSh(:))
+                d_norm = x_adiab('d',iSh,j1,j2)*SNR(iSh)%d(j2) &
+                       / spline_int(x_adiab('t',iSh,j1,j2),SNR(iSh)%tSh(:),SNR(iSh)%dSh(:),SNR(iSH)%spline_dSh(:))
+                integrand = (B2(SNR(iSh)%B2,r_norm,d_norm,DSA(iSh)%Rtot) / DSA(+1)%B0)**2 &
+                          * (x_adiab('d',iSh,j1,j2) / x_adiab('d',iSh,0,j2))**(1/3.)
         end select
     end function integrand
     
@@ -351,37 +355,6 @@ end function x_adiab
 
 
 !================================================================================================
-  function B2(B2_Sh,r_ratio,d_ratio,R_Sh)
-!================================================================================================
-! returns an estimate of the downstream magnetic field [Gauss],
-! knowing its value immediately downstream of the shock when the cell was shocked
-!================================================================================================
-    
-    implicit none
-    real*8::B2       ! total magnetic field at radius r
-    real*8::B2_Sh    ! total magnetic field immediately downstream of the shock, at radius r_Sh
-    real*8::r_ratio  ! current radius    r  / radius  when shocked   r_Sh
-    real*8::d_ratio  ! current density d(r) / density when shocked d(r_Sh)
-    real*8::R_Sh     ! compression ratio at the shock: R_Sh = d(r_Sh) / d0
-    
-    real*8::B2_Sh_para,B2_r_para
-    real*8::B2_Sh_perp,B2_r_perp
-    
-    ! separate parallel and perpendicular components, assuming the field was fully turbulent upstream
-    B2_Sh_para =            1. / sqrt(1+2*R_Sh**2) * B2_Sh
-    B2_Sh_perp = sqrt(2.)*R_Sh / sqrt(1+2*R_Sh**2) * B2_Sh
-    
-    ! advect parallel and perpendicular components, assuming the field is frozen in the fluid
-    B2_r_para = B2_Sh_para / r_ratio**2
-    B2_r_perp = B2_Sh_perp * r_ratio * d_ratio
-    
-    ! add parallel and perpendicular components
-    B2 = sqrt(B2_r_para**2 + B2_r_perp**2)
-    
-end function B2
-
-
-!================================================================================================
   function SNR_density(r)
 !================================================================================================
 ! returns the density [amu/cm3] at radius r [cm]
@@ -402,7 +375,6 @@ end function B2
     end if
     
 end function SNR_density
-
 
 !================================================================================================
   function SNR_density_3D(r,x, dd)
@@ -476,7 +448,7 @@ end function SNR_velocity
     else if(SNR(+1)%r_Sh<r                    )then  ! ambient medium
         SNR_pressure = (SNR_density(r)*amu)/(SNR(+1)%mu*mp) * kB * DSA(+1)%T0
     end if
-    SNR_pressure = SNR_pressure / (1 - SNR_particle_pressure(r))
+    SNR_pressure = SNR_pressure / (1 - SNR_particle_pressure(r)) 
     
 end function SNR_pressure
 
@@ -486,11 +458,11 @@ end function SNR_pressure
 !================================================================================================
 ! returns the total pressure [dyn/cm2] at radius r [cm]  as SNR_pressure, with turbulent ISM
 !================================================================================================
-
+    
     implicit none
     real*8::r,SNR_pressure_3D
     real*8,dimension(1:3)::x
-
+    
     if(                        r<=SNR(-1)%r_Sh)then  ! un-shocked ejecta
         SNR_pressure_3D = (SNR_density(r)*amu)/(SNR(-1)%mu*mp) * kB * DSA(-1)%T0
     else if(SNR(-1)%r_Sh<r.and.r<=SN%r_CD     )then  ! shocked ejecta
@@ -501,8 +473,8 @@ end function SNR_pressure
         !SNR_pressure_3D = (SNR_density_3D(r,x,-1.d0)*amu)/(SNR(+1)%mu*mp) * kB * DSA(+1)%T0
         SNR_pressure_3D = (SNR_density_3D(r,x,-1.d0)*amu)/(SNR(+1)%mu*mp) * kB * DSA(+1)%T0
     end if
-    SNR_pressure_3D = SNR_pressure_3D / (1 - SNR_particle_pressure(r))
-
+    SNR_pressure_3D = SNR_pressure_3D / (1 - SNR_particle_pressure(r)) 
+    
 end function SNR_pressure_3D
 
 
@@ -522,6 +494,7 @@ end function SNR_pressure_3D
         SNR_particle_pressure = spline_int(r,SNR(-1)%r(:),SNR(-1)%w(:),SNR(-1)%spline_w(:))
     else if(SN%r_CD     <r.and.r<=SNR(+1)%r_Sh)then  ! shocked ambient medium
         SNR_particle_pressure = spline_int(r,SNR(+1)%r(:),SNR(+1)%w(:),SNR(+1)%spline_w(:))
+        ! write(*,*) '#########',SNR_particle_pressure,'#########'
     else if(SNR(+1)%r_Sh<r                    )then  ! ambient medium
         SNR_particle_pressure = 0.
     end if
@@ -649,14 +622,45 @@ end function SNR_losses_age
     if(                        r<=SNR(-1)%r_Sh)then  ! un-shocked ejecta
         SNR_mag_field = DSA(-1)%B0
     else if(SNR(-1)%r_Sh<r.and.r<=SN%r_CD     )then  ! shocked ejecta
-        SNR_mag_field = spline_int(r,SNR(-1)%r(:),SNR(-1)%B(:),SNR(-1)%spline_B(:))
+        SNR_mag_field = B2(SNR(-1)%B2,r/SNR(-1)%r_Sh,SNR_density(r)/SNR(-1)%d0/DSA(-1)%Rtot,DSA(-1)%Rtot)
     else if(SN%r_CD     <r.and.r<=SNR(+1)%r_Sh)then  ! shocked ambient medium
-        SNR_mag_field = spline_int(r,SNR(+1)%r(:),SNR(+1)%B(:),SNR(+1)%spline_B(:))
+        SNR_mag_field = B2(SNR(+1)%B2,r/SNR(+1)%r_Sh,SNR_density(r)/SNR(+1)%d0/DSA(+1)%Rtot,DSA(+1)%Rtot)
     else if(SNR(+1)%r_Sh<r                    )then  ! ambient medium
         SNR_mag_field = DSA(+1)%B0
     end if
     
 end function SNR_mag_field
+
+
+!================================================================================================
+  function B2(B2_Sh,r_norm,rho_norm,R_Sh)
+!================================================================================================
+! returns an estimate of the downstream magnetic field [Gauss] at normalized radius r_norm,
+! knowing its value immediately downstream of the shock
+!================================================================================================
+    
+    implicit none
+    real*8::B2       ! total magnetic field at radius r
+    real*8::B2_Sh    ! total magnetic field immediately downstream of the shock, at radius r_Sh
+    real*8::r_norm   ! current radius  in units of the shock radius : r_norm   = r / r_Sh
+    real*8::rho_norm ! current density in units of the shock density: rho_norm = rho(r) / rho(r_Sh)
+    real*8::R_Sh     ! compression ratio at the shock: R_Sh = rho(r_Sh) / rho0
+    
+    real*8::B2_Sh_para,B2_r_para
+    real*8::B2_Sh_perp,B2_r_perp
+    
+    ! separate parallel and perpendicular components, assuming the field was fully turbulent upstream
+    B2_Sh_para =            1. / sqrt(1+2*R_Sh**2) * B2_Sh
+    B2_Sh_perp = sqrt(2.)*R_Sh / sqrt(1+2*R_Sh**2) * B2_Sh
+    
+    ! advect parallel and perpendicular components, assuming the field is frozen in the fluid
+    B2_r_para = B2_Sh_para / r_norm**2
+    B2_r_perp = B2_Sh_perp * r_norm * rho_norm
+    
+    ! add parallel and perpendicular components
+    B2 = sqrt(B2_r_para**2 + B2_r_perp**2)
+    
+end function B2
 
 
 !================================================================================================
@@ -679,7 +683,6 @@ end function SNR_mag_field
         call spline_ini(SNR(iSh)%r, SNR(iSh)%tS, SNR(iSh)%spline_tS)
         call spline_ini(SNR(iSh)%r, SNR(iSh)%tI, SNR(iSh)%spline_tI)
         call spline_ini(SNR(iSh)%r, SNR(iSh)%tL, SNR(iSh)%spline_tL)
-        call spline_ini(SNR(iSh)%r, SNR(iSh)%B , SNR(iSh)%spline_B )
     enddo
     
   end subroutine init_interpolators
