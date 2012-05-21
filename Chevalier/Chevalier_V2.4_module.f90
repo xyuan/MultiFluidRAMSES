@@ -494,7 +494,9 @@ end function SNR_pressure_3D
         SNR_particle_pressure = spline_int(r,SNR(-1)%r(:),SNR(-1)%w(:),SNR(-1)%spline_w(:))
     else if(SN%r_CD     <r.and.r<=SNR(+1)%r_Sh)then  ! shocked ambient medium
         SNR_particle_pressure = spline_int(r,SNR(+1)%r(:),SNR(+1)%w(:),SNR(+1)%spline_w(:))
-        ! write(*,*) '#########',SNR_particle_pressure,'#########'
+        !if(SNR_particle_pressure>0.5) then
+	!	 write(*,*) '#########',SNR(+1)%w(1), SNR(+1)%w(200),'#########'
+	!endif
     else if(SNR(+1)%r_Sh<r                    )then  ! ambient medium
         SNR_particle_pressure = 0.
     end if

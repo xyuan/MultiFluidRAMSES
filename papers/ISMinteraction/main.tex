@@ -9,7 +9,7 @@
 
 \input{defs}
 
-\def\basedir{../../ramses/output}
+\def\basedir{../../ramses/output/archive}
 
 \usepackage{txfonts}
 %\usepackage{natbib}
@@ -77,6 +77,13 @@ For the project we employ the modified \citet{ferrand} AMR code RAMSES \citet{te
 
 %\section{Numerical models}
  \subsection{Low resolution runs}
+ 
+ v.eth_evol(dir=t5, col='b', fhold=True)
+ v.eth_evol(dir=t1, col='c', fhold=True)
+ v.eth_evol(dir=t02, col='r', fhold=True)
+ v.eth_evol(dir=tx, col='g', fhold=True)
+ v.eth_evol(dir=t0, col='k')
+
  
 %\def\xilo{\basedir/bckreact_b5_n01_E1_M14_t3d3}
 %\def\xime{\basedir/weakxi4_b5_n01_E1_M14_t3d3}

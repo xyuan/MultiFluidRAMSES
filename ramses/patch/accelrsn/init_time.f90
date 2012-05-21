@@ -121,7 +121,7 @@ subroutine init_time
           endif
           
           if(myid==1)then
-            SN_TECH%verbose =  5  ! level of verbosity (from 0 to 4)
+            SN_TECH%verbose =  1  ! level of verbosity (from 0 to 4)
           else
             SN_TECH%verbose = -1  ! strictly nothing
           endif

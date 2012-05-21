@@ -81,7 +81,7 @@ HYDROOBJ = init_hydro.o init_flow_fine.o write_screen.o output_hydro.o courant_f
 ifeq ($(PATCH),../patch/accelrsn/)
 	NTOBJ = beschb.o bessik.o chebev.o antinue.o antinumu.o elec.o gamma.o nue.o numu.o posi.o sigma.o em.o
 	THOBJ = TeTi.o abint.o spec_elt.o exponentiation.o math.o ionisation.o recombinaison.o
-	SNROBJ1 = $(NTOBJ) $(THOBJ) thermal_V1.2_module.o Blasi_V2.1_module.o Chevalier_V2.4_module.o
+	SNROBJ1 = $(NTOBJ) $(THOBJ) thermal_V1.2_module.o Blasi_V2.1_module.o Chevalier_V2.4_module.o 
 	SNROBJ2 = accel.o emission.o
 endif
 # All objects

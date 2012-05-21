@@ -277,6 +277,7 @@ end subroutine solve_coupled_system
     ! electrons
     IN%Emax_e = 0                                 ! maximum energy of protons
     
+    
     n_sol = Blasi_DSA()
     
     if (n_sol<1)call error("compute_acceleration","no solution found by Blasi's model",.true.)
@@ -289,8 +290,15 @@ end subroutine solve_coupled_system
     DSA(iSh)%Geff    = (OUT(n_sol)%Rtot+1)/(OUT(n_sol)%Rtot-1)
     DSA(iSh)%Pc_Ptot = OUT(n_sol)%Wcr
     DSA(iSh)%Pg2_Pd0 = OUT(n_sol)%P2 / (SNR(iSh)%d0*amu*SNR(iSh)%u_Sh**2)
+
+    !write(*,*) '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
+    !write(*,*) 'CHEVALIER: verbose=', TECH%verbose 
+    !write(*,*) '       OUT%Wcr=',OUT(n_sol)%Wcr
+    !write(*,*) '       Pc/Ptot=',DSA(iSh)%Pc_Ptot
+    !write(*,*) '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
     
     if(TECH%verbose>=3)then
+	write(*,*)" iSh=", iSh
         write(*,*)"      Rtot = ",DSA(iSh)%Rtot,&
                       ", Geff = ",DSA(iSh)%Geff,&
                    ", Pc/Ptot = ",DSA(iSh)%Pc_Ptot,&

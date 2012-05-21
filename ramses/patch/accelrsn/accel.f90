@@ -469,6 +469,7 @@ subroutine accelerate_particles(ilevel)
           Blasi_IN%xmax_p = x_frac * shock(eps)%x*code%x
         endif
         Blasi_IN%Emax_e = 0   ! maximum energy of electrons
+	Blasi_IN%verbose = 0
         
         n_sol = Blasi_DSA()
         if(n_sol/=1)then
@@ -554,11 +555,9 @@ subroutine back_react(ilevel)
   real(dp)::dx,shock_half_width,delta_icell,g_eff_icell,B_eff_icell
 
 
-
   integer::ibound,boundary_dir,idim,inbor
   integer,dimension(1:nvector),save::ind_grid,ind_grid_ref
   integer,dimension(1:nvector),save::ind_cell,ind_cell_ref
-
 
 
   dx=0.5D0**ilevel*boxlen

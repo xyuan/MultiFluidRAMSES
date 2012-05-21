@@ -20,10 +20,14 @@ subroutine backup_hydro(filename)
   use amr_commons
   use hydro_commons
   use hydro_parameters
+  use Chevalier,only: SN,SN_DSA=>DSA,SN_TECH=>TECH,SNR, &
+                      compute_acceleration, compute_hydro_profiles 
+
   implicit none
   character(LEN=128)::filename
 
   integer::i,ivar,ncache,ind,ilevel,igrid,iskip,ilun,istart,ibound
+  integer::iSh
   integer,allocatable,dimension(:)::ind_grid,ind_cell
   real(dp),allocatable,dimension(:)::xdp
   real(dp)::e_kin
@@ -56,7 +60,18 @@ subroutine backup_hydro(filename)
   if(verbose)write(*,*)'Entering backup_hydro'
 
   ilun=ncpu+myid+10
-  
+
+
+  !!write(*,*) '########  output_hydro, verbose=', SN_TECH%verbose
+  !!! ???
+  !if(do_accel)call accelerate_particles(nlevelmax)
+  !do iSh=+1,-1,-2
+  !   SN_DSA(iSh)%Pc_Ptot = shock(iSh)%W_cr
+  !   !if(SN_DSA(iSh)%shock_conditions .eq. 'calculated') call compute_acceleration(iSh) ! compute DSA%Pc_Ptot from Blasi_OUT%Wcr
+  !enddo
+  !call compute_hydro_profiles() ! compute SNR%w from DSA%Pc_Ptot
+  !!!
+
   call title(myid,nchar)
   fileloc=TRIM(filename)//TRIM(nchar)
   open(unit=ilun,file=fileloc,form='unformatted')
@@ -134,7 +149,7 @@ subroutine backup_hydro(filename)
                        if(ivar==VAR_W)then
                           call save_wcr(position(ind_cell(i),1:3),dx,ind_cell(i))
                           xdp(i)=uold(ind_cell(i),ivar)/uold(ind_cell(i),1)
-                          ! if (xdp(i) > 0.5) write(*,*) 'output_hydro::: ', i, ind_cell(i), '==== ',xdp(i),' ===='
+                          !if (xdp(i) > 0.7) write(*,*) 'output_hydro::: ', i, ind_cell(i), '==== ',xdp(i),' ===='
                        endif
                     end do
                  endif

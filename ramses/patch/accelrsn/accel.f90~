@@ -194,7 +194,7 @@ subroutine average_radial_profile(ilevel)
       !          ' and thus belongs to shell ',ishell,' of radius ',temp_loc(ishell,0)
       ! sum primitive variables
       temp_loc(ishell,1) = temp_loc(ishell,1) + uold(icell,1)
-      do ivar=2,4
+      do ivar=2,4 ! {u,v,w}
         temp_loc(ishell,ivar) = temp_loc(ishell,ivar) + uold(icell,ivar)/uold(icell,1) !+ H_th_new * position(icell,ivar-1)
       enddo
 #ifdef VAR_G
@@ -204,7 +204,7 @@ subroutine average_radial_profile(ilevel)
       temp_loc(ishell,5) = temp_loc(ishell,5) + (gamma-1d0)                      &
                          * (uold(icell,5)-e_kin(uold(icell,1),uold(icell,2:ndim+1),position(icell,1:ndim)))
 #endif
-      do ivar=6,nvar
+      do ivar=6,nvar ! other varaibles 
         temp_loc(ishell,ivar) = temp_loc(ishell,ivar) + uold(icell,ivar)/uold(icell,1)
       enddo
     end do
@@ -231,13 +231,13 @@ subroutine average_radial_profile(ilevel)
   
   ! Go back to physical quantities
   
-  do ivar=2,4
+  do ivar=2,4 ! {u,v,w}
     temp(:,ivar) = temp(:,ivar) + H_th_new*temp(:,0)
   enddo
   if(omega==2)then
-    temp(:,1  ) = temp(:,1  )/a_t**3
-    temp(:,2:4) = temp(:,2:4)/a_t
-    temp(:,5  ) = temp(:,5  )/a_t**5
+    temp(:,1  ) = temp(:,1  )/a_t**3  ! den
+    temp(:,2:4) = temp(:,2:4)/a_t     ! {u,v,w}
+    temp(:,5  ) = temp(:,5  )/a_t**5  ! gamma
   endif
   temp(:,0) = temp(:,0)*a_t
   
@@ -469,6 +469,7 @@ subroutine accelerate_particles(ilevel)
           Blasi_IN%xmax_p = x_frac * shock(eps)%x*code%x
         endif
         Blasi_IN%Emax_e = 0   ! maximum energy of electrons
+	Blasi_IN%verbose = 0
         
         n_sol = Blasi_DSA()
         if(n_sol/=1)then
@@ -553,14 +554,26 @@ subroutine back_react(ilevel)
   integer::igrid, ngrid, ncache
   real(dp)::dx,shock_half_width,delta_icell,g_eff_icell,B_eff_icell
 
+
+
+  integer::ibound,boundary_dir,idim,inbor
+  integer,dimension(1:nvector),save::ind_grid,ind_grid_ref
+  integer,dimension(1:nvector),save::ind_cell,ind_cell_ref
+
+
+
   dx=0.5D0**ilevel*boxlen
   shock_half_width=2*dx
   
   n=0
-  do ind=1,twotondim
+  do ind=1,twotondim 
      iskip=ncoarse+(ind-1)*ngridmax
+     !if (t> 2.0d1) write(*,*) '*** ICELL: ', icell, ' --- ', i, ind, active(ilevel)%igrid(i), ncoarse, iskip
+     !write(*,*) '*** ind, iskip: ', ind, iskip, active(ilevel)%ngrid, ncoarse
+
      do i=1,active(ilevel)%ngrid
         icell=active(ilevel)%igrid(i)+iskip
+        !write(*,*) '*** i, icell: ', i, icell, active(ilevel)%igrid(i)
         !!do eps=-1,+1,+2
           delta_icell = position(icell,0)-shock(eps)%x/a_t
           if(delta_icell*eps>=0)then
@@ -572,7 +585,7 @@ subroutine back_react(ilevel)
             !  write(*,*)'gamma modified to ',g_eff_icell,' at r = ',position(icell,0),&
             !  ' (delta = ',delta_icell,' = ',delta_icell/shock_half_width,'shock_half_width)'
 #endif
-            uold(icell,VAR_W) = shock(eps)%W_cr*uold(icell,1) ! this works
+            !!! uold(icell,VAR_W) = shock(eps)%W_cr*uold(icell,1) 
             n=n+1
           endif
         !!end do
@@ -580,32 +593,23 @@ subroutine back_react(ilevel)
   end do
   !write(*,*)'  backreaction applied on ',n,'cells'
 
-! dk: 13.04.2012 store the CR pressure ! this does not work
-  ncache=active(ilevel)%ngrid
-  do igrid=1,ncache,nvector
-     ngrid=MIN(nvector,ncache-igrid+1)
-     call save_wcr(dx,ngrid)
-  end do
-
 end subroutine back_react
 
 !###########################################################
 !###########################################################
 !###########################################################
 !###########################################################
-subroutine save_wcr(dx,ncell)
+subroutine save_wcr(x,dx,icell)
   use amr_parameters
   use amr_commons
   use hydro_parameters
   use hydro_commons
   use const
   implicit none
-  integer ::ncell                         ! Number of cells
+  integer ::icell                         ! Cell index 
   real(dp)::dx                            ! Cell size
-  real(dp),dimension(1:nvector,1:ndim)::x ! Cell center position.
+  real(dp),dimension(1:ndim)::x           ! Cell center position.
 
-  integer::i
-  real(dp),dimension(1:nvector),save::q_tmp ! Primitive variables
   real(dp)::average_cell    ! averaging function
   integer::n_av=1           ! number of sub-cells for averaging (in each direction)
   interface
@@ -617,9 +621,6 @@ subroutine save_wcr(dx,ncell)
     end function
   end interface
 
-  do i=1,ncell
-     q_tmp(i) = average_cell(f_init,VAR_W,x(i,:),dx,n_av)
-  end do
-  uold(1:ncell,VAR_W) = uold(1:ncell,1) * q_tmp(1:ncell)
+  uold(icell,VAR_W) = uold(icell,1) * average_cell(f_init,VAR_W,x,dx,n_av) 
 
 end subroutine save_wcr

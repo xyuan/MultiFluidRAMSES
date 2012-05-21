@@ -387,6 +387,10 @@ END SUBROUTINE RK4
             SNR(iSh)%r(i) = ( SNR(iSh)%eta(SNR(iSh)%N) &
                             / SNR(iSh)%eta(         i) )**(SN%lambda)
             SNR(iSh)%w(i) = SNR(iSh)%PcPg(i) / (1 + SNR(iSh)%PcPg(i))
+        !    if(SNR(iSh)%w(i) >0.4) then
+	!	 write(*,*) 'MAKE PHYSICAL: =============',iSh,i,SNR(iSh)%w(i),SNR(iSh)%PcPg(i),'=============='
+        !    endif
+
         end do
         do i = 0,SNR(iSh)%N
             SNR(iSh)%d(i) = ( SNR(iSh)%r(i)**(-SN%s) * SNR(iSh)%Ptot(i) * SNR(iSh)%C2(0) * (1+SNR(iSh)%PcPg(0)) ) &

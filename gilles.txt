@@ -1,3 +1,18 @@
+April 26, 2012 5:54:38 PM GMT+02:00
+
+you will indeed have to deal with numerical instabilities at the FS when
+using Ramses in comoving mode - this is a long standing issue, and at a
+quite fundamental level. 
+In passing, with omega = 1, you're not in the cartesian frame, you're still
+in a comoving frame (x,t), but with physical hydro quantities (ρ,u,P). Not
+that this mode is experimental: I've not used it since June 2010, and it
+might not be working...
+What you can do, alternatively, is to set lambda by hand, to a non-comoving
+value (although lambda = 0 won't work). As the shock is free to move a bit,
+the numerical instabilities will be smoothed out - but so will the physical
+RT instabilities...
+
+
 April 24, 2012 9:14:15 PM GMT+02:00
 
 -----

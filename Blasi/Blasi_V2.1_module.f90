@@ -239,7 +239,7 @@ end subroutine reset
         
         OUT(i_sol)%Fesc = OUT(i_sol)%Fesc / (0.5*IN%n0*mp*IN%u0**2) ! Fesc is now normalized to the upstream kinetic energy flux (it was already divided by u0)
         OUT(i_sol)%Pcr  = OUT(i_sol)%Pcr  /     (IN%n0*mp*IN%u0**2) ! Pcr  is now normalized to the upstream kinetic pressure
-        
+
         ! check energy conservation
         
         FE0 = 0.5*IN%n0*mp*IN%u0**3 * (1. + 2./(IN%Gth-1)/IN%Ms0**2 - OUT(i_sol)%Fesc)
@@ -274,6 +274,8 @@ end subroutine reset
         endif
         
     enddo
+
+
     
     Blasi_DSA = n_sol
     
@@ -379,7 +381,7 @@ end subroutine add_cutoff
     OUT(i_sol)%Pcr = OUT(i_sol)%Pcr * 4.*pi/3. * mc2
     
     OUT(i_sol)%Wcr = OUT(i_sol)%Pcr / (OUT(i_sol)%P2+OUT(i_sol)%Pcr)
-    
+
     ! internal energy = sum of kinetic energy
     
     OUT(i_sol)%Ecr = 0.

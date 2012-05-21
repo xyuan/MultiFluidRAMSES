@@ -386,14 +386,18 @@ END SUBROUTINE RK4
         do i = 0,SNR(iSh)%N
             SNR(iSh)%r(i) = ( SNR(iSh)%eta(SNR(iSh)%N) &
                             / SNR(iSh)%eta(         i) )**(SN%lambda)
-            SNR(iSh)%w(i) = SNR(iSh)%PcPg(i) / (1.0 + SNR(iSh)%PcPg(i))
+            SNR(iSh)%w(i) = SNR(iSh)%PcPg(i) / (1 + SNR(iSh)%PcPg(i))
+            if(SNR(iSh)%w(i) >0.5) then
+		 write(*,*) '=============',iSh,i,SNR(iSh)%w(i),SNR(iSh)%PcPg(i),'=============='
+            endif
+
         end do
         do i = 0,SNR(iSh)%N
             SNR(iSh)%d(i) = ( SNR(iSh)%r(i)**(-SN%s) * SNR(iSh)%Ptot(i) * SNR(iSh)%C2(0) * (1+SNR(iSh)%PcPg(0)) ) &
                           / ( SNR(iSh)%r(0)**(-SN%s) * SNR(iSh)%Ptot(0) * SNR(iSh)%C2(i) * (1+SNR(iSh)%PcPg(i)) )
-            SNR(iSh)%u(i) = (1.0 + SNR(iSh)%vv(i)) * SN%lambda
-            SNR(iSh)%P(i) = ( SNR(iSh)%r(i)**(2-SN%s) * SNR(iSh)%Ptot(i) * (1.0 +SNR( +1)%PcPg(0)) ) &
-                          / ( SNR(iSh)%r(0)**(2-SN%s) * SNR(iSh)%Ptot(0) * (1.0 +SNR(iSh)%PcPg(i)) )
+            SNR(iSh)%u(i) = (1 + SNR(iSh)%vv(i)) * SN%lambda
+            SNR(iSh)%P(i) = ( SNR(iSh)%r(i)**(2-SN%s) * SNR(iSh)%Ptot(i) * (1 +SNR( +1)%PcPg(0)) ) &
+                          / ( SNR(iSh)%r(0)**(2-SN%s) * SNR(iSh)%Ptot(0) * (1 +SNR(iSh)%PcPg(i)) )
         end do
     end do
     

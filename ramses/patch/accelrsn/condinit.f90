@@ -203,7 +203,8 @@ function f_init(x,dx,ivar)
 #endif
     case(VAR_W)
       f_init = SNR_particle_pressure(r*code%x)
-      !if (t>1.0E+01 .and. f_init>0.7) write(*,*) 'time = ',t,'   *** CASE VAR_W ***', r, f_init
+      !!if (t>1.0E+01 .and. f_init>0.7) write(*,*) 'time = ',t,'   *** CASE VAR_W ***', r, f_init
+      !if (f_init>0.5) write(*,*) '   *** CASE VAR_W ***', r, f_init
   end select
   return
   

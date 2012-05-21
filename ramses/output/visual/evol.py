@@ -100,7 +100,7 @@ def plotevol(dir='test/', var='radius', fig=1):
     ylab=ylab.replace('_','_{')
     if '_{' in ylab: ylab=ylab+'}'
     pylab.ylabel('$\mathrm{'+ylab+'}$')
-    pylab.legend()
+    pylab.legend(loc='lower left')
     var=var.replace('/','_')
     print var
     matplotlib.pyplot.savefig(basedir+dir+var+'_t.pdf')
