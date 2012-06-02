@@ -48,6 +48,7 @@ module Chevalier
         real*8::nfr(1:NDIM)    ! density pertrubation frequencies
         real*8::nph(1:NDIM)    ! density pertrubation phase
         real*8::namp           ! density pertrubation amplitude
+        real*8::lcl            ! density clump size
     end type
     type(SN_struct),save::SN
     
@@ -385,8 +386,9 @@ end function SNR_density
     implicit none
     
     real*8::r,SNR_density_3D
-    real*8,dimension(1:3)::x
+    real*8,dimension(1:3)::x, sx
     real*8::dd,ddSN
+    integer::i
 
 
     if(dd < 0.d0) then 
@@ -402,7 +404,11 @@ end function SNR_density
     else if(SN%r_CD     <r.and.r<=SNR(+1)%r_Sh)then  ! shocked ambient medium
         SNR_density_3D = spline_int(r,SNR(+1)%r(:),SNR(+1)%d(:),SNR(+1)%spline_d(:))
     else if(SNR(+1)%r_Sh<r                    )then  ! ambient medium
-        SNR_density_3D = ddSN * (r)**(-SN%s) * (1.01 + SN%namp*(sin(x(1)) + sin(x(2)) + sin(x(3))))
+        do i=1,3
+           sx(i) = int(sin(x(i))**2 + SN%lcl)  
+        enddo
+        !SNR_density_3D = ddSN * (r)**(-SN%s) * (1.0 + SN%namp*(sx(1)*sx(2)*sx(3)))
+        SNR_density_3D = ddSN * (r)**(-SN%s) * (1.0 + SN%namp*(sin(x(1))**2 * sin(x(2))**2 * sin(x(3))**2))
     end if
     
 end function SNR_density_3D
@@ -494,9 +500,9 @@ end function SNR_pressure_3D
         SNR_particle_pressure = spline_int(r,SNR(-1)%r(:),SNR(-1)%w(:),SNR(-1)%spline_w(:))
     else if(SN%r_CD     <r.and.r<=SNR(+1)%r_Sh)then  ! shocked ambient medium
         SNR_particle_pressure = spline_int(r,SNR(+1)%r(:),SNR(+1)%w(:),SNR(+1)%spline_w(:))
-        if(SNR_particle_pressure>0.5) then
-		 write(*,*) '#########',SNR(+1)%w(1), SNR(+1)%w(200),'#########'
-	endif
+        !if(SNR_particle_pressure>0.5) then
+	!	 write(*,*) '#########',SNR(+1)%w(1), SNR(+1)%w(200),'#########'
+	!endif
     else if(SNR(+1)%r_Sh<r                    )then  ! ambient medium
         SNR_particle_pressure = 0.
     end if

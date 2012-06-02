@@ -34,6 +34,8 @@ module hydro_parameters
 
   real(dp),dimension(1:NDIM)::n_freq   ! ISM spacial fluctuation frequencies dim=1:3
   real(dp),dimension(1:NDIM)::n_phase  ! ISM spacial fluctuation phases dim=1:3
+  real(dp)::n_ampl                     ! ISM density enchancement
+  real(dp)::n_cloud_size               ! ISM cloud size (in pc, do not change the units)
   
   ! acceleration parameters
   integer::p_res=10             ! momentum resolution: number of bins per decade

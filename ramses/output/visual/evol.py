@@ -7,8 +7,8 @@ import pymses
 import re   
 
 font = {'family' : 'normal',
-        'weight' : 'bold',
-        'size'   : 20}
+        'weight' : 'normal',
+        'size'   : 16}
 
 matplotlib.rc('font', **font)
 
@@ -20,6 +20,8 @@ matplotlib.rc('font', **font)
 #  for tick in ax.yaxis.get_major_ticks():
 #    tick.label1.set_fontsize(fontsize)
 
+global lw
+lw=2
 
 basedir = "/Users/dkosenko/Work/MultiFluidRAMSES/ramses/output/"
 dir = "test/"
@@ -83,26 +85,43 @@ def dataset(dir='test/', var='radius'):
     return [t, rs[var], fs[var]]
 
 
-def plotevol(dir='test/', var='radius', fig=1):
-    [t, rs, fs] = dataset(dir=dir, var=var)
+def plotevol(dir='test', var='radius', ymax=500.0, col='k', lab='test', fig=1, fhold=False, lloc='lower left'):
+    [t, rs, fs] = dataset(dir=dir+'/', var=var)
 
-    pylab.close(fig)
-    figure = matplotlib.pyplot.figure(num=fig)
-    pylab.semilogx(t,fs,label='FS')
-    pylab.hold(True)
-    if var != 'Mach': 
-       pylab.semilogx(t,rs,label='RS')
-    if var == 'velocity': 
-       pylab.ylim([1.e1, 1.e4])
-    pylab.xlim([200.0, 5.0e3])
+    #if not fhold: pylab.close(fig)
+    #figure = matplotlib.pyplot.figure(num=fig)
+    pylab.semilogx(t,fs,col,linewidth=lw,label=lab)
+    pylab.hold(fhold)
+    #if var != 'Mach': 
+    #   pylab.semilogx(t,rs,label='RS')
+    #if var == 'velocity': 
+    #   pylab.ylim([1.e1, 1.e4])
+    pylab.xlim([100.0, 5.0e3])
     pylab.xlabel('t, years')
     ylab = var
     ylab=ylab.replace('_','_{')
     if '_{' in ylab: ylab=ylab+'}'
+    pylab.ylim([0.0, ymax])
     pylab.ylabel('$\mathrm{'+ylab+'}$')
-    pylab.legend(loc='lower left')
+    pylab.legend(loc=lloc)
     var=var.replace('/','_')
     print var
-    matplotlib.pyplot.savefig(basedir+dir+var+'_t.pdf')
-    #matplotlib.pyplot.show()
+    #if not fhold: matplotlib.pyplot.savefig(basedir+dir+var+'_t.pdf')
+    if not fhold: matplotlib.pyplot.show()
     
+def plotevolall(var='radius', ymax=500.0, lloc='lower left'):
+    c = ['g', 'r', 'm', 'b']
+    t = ['test6nx003', 'test6nfr02', 'test6nfr1', 'test6nfr5', 'test6nfr0']
+    b = ['breact6nx003', 'breact6nfr02', 'breact6nfr1', 'breact6nfr5', 'breact6nfr0']
+    
+    #fig=1
+    #for i in range(len(c)):
+    #    plotevol(dir=t[i], col=c[i], fig=fig, fhold=True)
+    #plotevol(dir=t[-1], fig=fig)
+
+    fig=2
+    figure = matplotlib.pyplot.figure(num=fig)
+    for i in range(len(c)):
+        plotevol(dir=b[i], var=var, ymax=ymax, col=c[i], lab=b[i], lloc=lloc, fig=fig, fhold=True)
+    plotevol(dir=b[-1], var=var, ymax=ymax, lab=b[-1], lloc=lloc, fig=fig)
+                

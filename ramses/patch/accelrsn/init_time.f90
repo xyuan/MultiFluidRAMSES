@@ -74,17 +74,8 @@ subroutine init_time
           SN%q = n_ISM * cgs%mp/cgs%amu  ! normalization of ambient density [amu/cm^(3-s)]
           SN%nfr = n_freq                ! density pertrubation frequencies
           SN%nph = n_phase               ! density pertrubation phases
-
-          iampl = 0
-	  ! count dimensions
-          do j=1,3
-             if (abs(SN%nfr(j)) > 1.d-5) iampl = iampl + 1
-          enddo
-          if (iampl > 0) then
-              SN%namp = 1.d0/iampl
-          else
-              SN%namp = 0.d0
-          endif
+          SN%namp = n_ampl               ! density enchancement
+          SN%lcl = n_cloud_size          ! size of the clump 
 
 
           comp_ISM = 10**(-comp_ISM)

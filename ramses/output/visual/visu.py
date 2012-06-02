@@ -143,7 +143,7 @@ def load_slices(z=0.0, size=10):
     #print data
     return data
 
-def show_slice(var="d",log=False,end=[1,1,1], rmax=15.0, vmin = 1.e-3, vmax=2.e0, alpha=0.1, ax=None, ejecta=False, show=False):
+def show_slice(var="d",log=False,end=[1,1,1], rmax=15.0, vmin = 2.e-2, vmax=2.e0, alpha=0.1, ax=None, ejecta=False, show=False):
     N = numpy.sqrt(data.npoints)
     map = data[var].reshape(N,N)
     map_ej = data["f"].reshape(N,N)
@@ -155,7 +155,10 @@ def show_slice(var="d",log=False,end=[1,1,1], rmax=15.0, vmin = 1.e-3, vmax=2.e0
     data2d = pymses.analysis.sample_points(grid, points2d)
     rpc = data2d.points * output.info['unit_length'].express(C.pc) # rpc is 3D[len x 3] now
     
-    if log: map = numpy.log(map)
+    if log: 
+        map = numpy.log10(map)
+        vmin = numpy.log10(vmin)
+        vmax = numpy.log10(vmax)
 
 
     if rmax > rpc[-1,1]:
@@ -206,7 +209,7 @@ def read_times(dir="test/"):
     f.close()
     return tseq
 
-def anim_slices(dir="bckreact_b5_n01_E1_M14_t4d3",out=[2,3,4,5,6,7,8,9],end=[1.,1.,1.],N=None,var='d',log=True,fig=1,over=False, rmax=7.0, vmax=2.0, alpha=0.6, ejecta=True, dpi=300):
+def anim_slices(dir="bckreact_b5_n01_E1_M14_t4d3",out=[2,3,4,5,6,7,8,9],end=[1.,1.,1.],N=None,var='d',log=True,fig=1,over=False, rmax=7.0, vmax=0.8, alpha=0.99, ejecta=True, dpi=300):
 #def anim_slices(dir="backreaction_b5_3d3yr",out=[3,6],end=[1.,1.,1.],N=None,var='d',log=True,fig=1,over=False, rmax=15.0, mp4="dens_maps.mp4"):
     # reading time intervals
     tseq = read_times(dir=dir+'/')
@@ -222,7 +225,7 @@ def anim_slices(dir="bckreact_b5_n01_E1_M14_t4d3",out=[2,3,4,5,6,7,8,9],end=[1.,
         pylab.close(fig)
         figure = matplotlib.pyplot.figure(num=fig)
         pylab.hold(False)
-        [map, img, jet] = show_slice(var=var,log=False,rmax=rmax,ax=a,ejecta=ejecta, vmax=vmax, alpha=alpha)
+        [map, img, jet] = show_slice(var=var,log=log,rmax=rmax,ax=a,ejecta=ejecta, vmax=vmax, alpha=alpha)
         #ann = pylab.annotate(tseq[i-1]+' yrs', xy=(.5, .6),  xycoords='axes fraction', horizontalalignment='center', verticalalignment='center', color="white") 
         ann = pylab.annotate(tseq[i-1]+' yrs', xy=(.8, .9),  xycoords='axes fraction', horizontalalignment='center', verticalalignment='center', color="white") 
 	fname = '_tmp%03d.png'%i
@@ -363,7 +366,7 @@ def sum_3D(dir='test', out=1, size=6, foe=1.e51, slice=False):
     
     return [ethz, egsz, eknz, (ddmax-ddmin)/(masz/volz), den3d, rad]
 
-def fftden(dir="test", out = 10, fig=1, size=6, col=None):
+def fftden(dir="test", out = 10, fig=1, size=6, col=None, lab=None):
     rc('text', usetex=True)
     rc('font', family='serif')
     foe = 1.e51
@@ -386,9 +389,9 @@ def fftden(dir="test", out = 10, fig=1, size=6, col=None):
     else: 
         plot = pylab.axes()
         plot.set_xlabel("k, pc$^{-1}$")
-        plot.set_xlim([0.03, 50.0])
+        plot.set_xlim([0.03, 100.0])
     # plot
-    plot.loglog(wnum, nfd3d[:][0][0], color=color)
+    plot.loglog(wnum, nfd3d[:][0][0], color=color, linewidth=2, label=lab)
     pylab.gcf().canvas.draw()
 
     return [wnum, nfd3d, plot]
@@ -399,38 +402,50 @@ def loop_fft(dir="test",out=[4,5,6,7,8,9], size=6,fig=1, over=False, eps="fft_pr
         pylab.close(fig)
         figure = matplotlib.pyplot.figure(num=fig)
 
+    tseq = read_times(dir=dir+'/')        
+    print len(tseq)
     # loop over outputs
     for i in out:
-        print 'output #',i
+        print 'output #',i, ', time: ', tseq[i-1]
+        tt = eval(tseq[i-1])
+        tlab = str('%4i' % eval(tseq[i-1]))
         if len(out)>1: col = -(i-out[0])/(1.*out[-1]-out[0])
         else: col = 0
         #print len(out), col, i, out[0]
-        [wnum, nfd3d, plot] = fftden(dir=dir, out=i, size=size, fig=fig, col=col)
+        [wnum, nfd3d, plot] = fftden(dir=dir, out=i, size=size, fig=fig, col=col, lab=tlab+' yrs')
         pylab.hold(True)
     
     # colour scale
-    if not over:
-        bar_plot = figure.add_axes([0.92,0.1,0.015,0.8])
-        norm = matplotlib.colors.Normalize(vmin=out[0], vmax=out[-1])
-        color_bar = matplotlib.colorbar.ColorbarBase(bar_plot, cmap=color_palette, norm=norm, orientation='vertical')
-        color_bar.set_label('output')
+    #if not over:
+        #bar_plot = figure.add_axes([0.92,0.1,0.015,0.8])
+        #norm = matplotlib.colors.Normalize(vmin=tseq[out[0]-1], vmax=tseq[out[-1]-1])
+        ##norm = matplotlib.colors.Normalize(vmin=out[0], vmax=out[-1])
+        #color_bar = matplotlib.colorbar.ColorbarBase(bar_plot, cmap=color_palette, norm=norm, orientation='vertical')
+        #color_bar.set_label('t, years')
+        ##color_bar.set_label('output')
 
     # initial power spectrum
-    dinit = 0.1 * numpy.ones(shape=nfd3d.shape)
-    finit = fftpack.fftn(dinit)
-    nfinit = numpy.abs(finit)
-    #print nfinit[:][0][0]
-    #print wnum
+    #dinit = 0.1 * numpy.ones(shape=nfd3d.shape)
+    #finit = fftpack.fftn(dinit)
+    #nfinit = numpy.abs(finit)
+    ##print nfinit[:][0][0]
+    ##print wnum
     pylab.hold(True)
-    plot.loglog(wnum, nfinit[:][0][0], color='k')
+    #plot.loglog(wnum, nfinit[:][0][0], color='k')
     kolm = []
     for w in wnum: kolm.append(1.0e4*w**(11.0/3.0))
-    plot.loglog(wnum, kolm, color='k')
+    plot.loglog(wnum, kolm, color='k', label='Kolmogorov')
+    plot.legend(loc='lower right')
+    #leg = matplotlib.pyplot.gca().get_legend()
+    leg = plot.get_legend()
+    ltext  = leg.get_texts()
+    matplotlib.pyplot.setp(ltext, fontsize='small')
+    
     print kolm
 
     #pylab.xlim([0.3, 30])
     #pylab.xlabel('k, pc$^{-1}$')
-    pylab.ylabel('|P|')
+    pylab.ylabel('P')
 
     matplotlib.pyplot.savefig(basedir+dir+'/'+eps)
     matplotlib.pyplot.show()
@@ -472,10 +487,11 @@ def eth_evol(dir="test", size=6, fig=1, fhold=False, col='k'):
     fev.close()
     figure = matplotlib.pyplot.figure(num=fig)
     if fhold: 
-        pylab.loglog(tseq[2:],eth, col+'-.', linewidth=lw)
+        #pylab.loglog(tseq[2:],eth, col+'-.', linewidth=lw)
+        pylab.loglog(tseq[2:],egs, col+':', linewidth=lw)
         pylab.hold(True)
         pylab.loglog(tseq[2:],egs, col+':', linewidth=lw)
-        pylab.loglog(tseq[2:],ect, col+':', linewidth=1)
+        #pylab.loglog(tseq[2:],ect, col+':', linewidth=1)
         pylab.loglog(tseq[2:],ekn, col+'--', linewidth=lw)
         pylab.loglog(tseq[2:],esum, col+'-', linewidth=lw)
         #pylab.loglog(tseq[2:],den, col+'-', label='$\mathrm{\delta n/n}$')
@@ -487,10 +503,10 @@ def eth_evol(dir="test", size=6, fig=1, fhold=False, col='k'):
 
         pylab.hold(fhold)
     else:
-        pylab.loglog(tseq[2:],eth, col+'-.', linewidth=lw, label='$\mathrm{E_{th}}$')
+        #pylab.loglog(tseq[2:],eth, col+'-.', linewidth=lw, label='$\mathrm{E_{th}}$')
+        pylab.loglog(tseq[2:],egs, col+':', linewidth=lw, label='$\mathrm{E_{th}}$')
         pylab.hold(True)
-        pylab.loglog(tseq[2:],egs, col+':', linewidth=lw, label='$\mathrm{E_{gas}}$')
-        pylab.loglog(tseq[2:],ect, col+':', linewidth=1, label='$\mathrm{E_{CR}}$')
+        #pylab.loglog(tseq[2:],ect, col+':', linewidth=1, label='$\mathrm{E_{CR}}$')
         pylab.loglog(tseq[2:],ekn, col+'--', linewidth=lw, label='$\mathrm{E_{kin}}$')
         pylab.loglog(tseq[2:],esum, col+'-', linewidth=lw, label='$\mathrm{E_{tot}}$')
         #pylab.loglog(tseq[2:],den, col+'-', label='$\mathrm{\delta n/n}$')

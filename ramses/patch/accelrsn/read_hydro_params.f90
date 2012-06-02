@@ -56,7 +56,7 @@ subroutine read_hydro_params(nml_ok)
        & ,eta_sn,yield,rbubble,f_ek &
        & ,J21,a_spec,z_ave
   namelist/snr_params/t_start,t_scale,E_SN,M_ej,n_ISM,d_ISM,T_ISM,p_ISM,index_ejecta,index_wind, &
-                      n_freq,n_phase,lambda,omega,comp_ISM,comp_ej
+                      n_freq,n_phase,n_ampl,n_cloud_size,lambda,omega,comp_ISM,comp_ej
   namelist/accel_params/p_res,B_ISM,D_norm,D_slope,zeta,xi_inj,p_inj,eta_inj,E_max,x_frac,cutoff,do_accel,do_backreact
   namelist/em_params/ionis_data,ionis_state,TeTp,NeNp,NEI,Eph_th,Eph_pi,Eph_ic,Eph_sy,Z_elt,do_emission
   
