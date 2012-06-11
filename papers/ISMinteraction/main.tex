@@ -41,48 +41,57 @@ To study the impact on ISM from SNR. Core-Collapse and Thermonuclear. CR acceler
 %\maketitle
 %
 %\tableofcontents
-
 \section{Introduction}
- 
+ \if !=
 The influence of supernova explosions on the interstellar matter (ISM) was studied in details
 In this study we investigate quantitatively the feedback from supernova remnants on the interstellar medium. We will study the thermal and kinetic energy contribution. Cosmic ray injection efficiency and structure of the ISM.
-
+\fi
 \section{Method}
 %For the project we employ the modified \citet{ferrand} AMR code RAMSES \citet{teyssier:2002}
-...
-
-\subsection{Initial condition}
+%\subsection{Initial condition}
 
 
 \section{Results}
 \subsection{2D density slices}
 
+%\if !=
 \def\thom{\basedir/test6nfr0}
 \def\tstra{\basedir/test6nx003}
-\def\tturb{\basedir/test6nfr02}
 \def\bhom{\basedir/breact6nfr0}
 \def\bstra{\basedir/breact6nx003}
-\def\bturb{\basedir/breact6nfr02}
 \def\slice{_tmp016}
-\FIGsi loslice  {\thom/\slice}  {\bhom/\slice}  {\tstra/\slice}  {\bstra/\slice} {\tturb/\slice}  {\bturb/\slice}  [width=0.45\hsize,angle=0]  Density slices of the low resolution simulations with (color bars show units in cm$^{-3}$). Top row shows the expansion into homogeneous medium, middle row corresponds to stratified medium, bottom row --- periodic density fluctuations (to replace with turbulent medium of Kolmogorov power spectrum). Right column contains models with cosmic ray acceleration in the remnant taken into account. 
+\FIGfo loslice  {\thom/\slice}  {\bhom/\slice}  {\tstra/\slice}  {\bstra/\slice} [width=0.45\hsize,angle=0]  Density slices of the low resolution simulations (color bars show units in cm$^{-3}$). Top row shows the expansion into homogeneous medium, bottom row corresponds to stratified medium. Right column contains models with cosmic ray acceleration  taken into account. 
 
-\def\thhom{\basedir/test6nfr0}
 \def\thstra{\basedir/irfucoast/test9_stratx03}
-\def\thturb{\basedir/test6nfr02}
-\def\bhhom{\basedir/breact6nfr0}
 \def\bhstra{\basedir/irfucoast/brea9_stratx03}
-\def\bhturb{\basedir/breact6nfr02}
-\def\slice{_tmp009}
-\FIGG hislice   {\thstra/_tmp016}  {\bhstra/\slice}  [width=0.45\hsize,angle=0]  Density slices of the high resolution simulations with (color bars show units in cm$^{-3}$). Stratified medium.
+\def\slice{d_tmp009}
+\FIGG hislice   {\thstra/_tmp016}  {\bhstra/\slice}  [width=0.9\hsize,angle=0]  Density slices of the high resolution simulations with (color bars show units in cm$^{-3}$). Stratified medium.
 
-\rfig{eevol} shows the energy evolution for the cases presented in \rfig{loslice}. Note, that cosmic ray acceleration is calculated semi-analytically using Blasi(ref) and Chevalier(ref) approach for the homogeneous ISM. Thus the results of the simulations of the SNR evolution with cosmic ray acceleration in non-homogeneous ISM are not accurate. Self-consistent account for the relativistic particles in the two-fluid approximation would produce more reliable models.
+%\fi
 
-\subsection{Energy evolution}
+\def\clumsin{\basedir/test6_nfr007_amp1_lcl02_sin}
+\def\clumbox{\basedir/test6_nfr007_amp1_lcl02_box}
+\def\tubesin{\basedir/test6_nfr007_amp1_lcl02_sin_ztube}
+\def\tubebox{\basedir/test6_nfr007_amp1_lcl02_box_ztube}
+\def\slice{_tmp011}
+\FIGfo locltest  {\clumsin/\slice}  {\clumbox/\slice}  {\tubesin/\slice}  {\tubebox/\slice} [width=0.45\hsize,angle=0]  Density slices of the low resolution simulations (color bars show units in cm$^{-3}$).  Top row figures show models with a clump of the density enhanced by factor 10 (left --- $\sin^2$-shape, right --- localized cloud), bottom row figures show simulations with a tube (along the line of sight) of the same density enhancement of 10 (left --- $\sin^2$-shape, right --- localized filament)
+
+\def\clumsin{\basedir/brea6_nfr007_amp1_lcl02_sin}
+\def\clumbox{\basedir/brea6_nfr007_amp1_lcl02_box}
+\def\tubesin{\basedir/brea6_nfr007_amp1_lcl02_sin_ztube}
+\def\tubebox{\basedir/brea6_nfr007_amp1_lcl02_box_ztube}
+\def\slice{_tmp011}
+\FIGfo loclbrea  {\clumsin/\slice}  {\clumbox/\slice}  {\tubesin/\slice}  {\tubebox/\slice} [width=0.45\hsize,angle=0]  Density slices of the low resolution simulations with the cosmic ray acceleration (color bars show units in cm$^{-3}$). The details as in \rfig{locltest}
+
+
+%\rfig{eevol} shows the energy evolution for the cases presented in \rfig{loslice}. Note, that cosmic ray acceleration is calculated semi-analytically using Blasi(ref) and Chevalier(ref) approach for the homogeneous ISM. Thus the results of the simulations of the SNR evolution with cosmic ray acceleration in non-homogeneous ISM are not accurate. Self-consistent account for the relativistic particles in the two-fluid approximation would produce more reliable models.
+
+%\subsection{Energy evolution}
 \def\evol{eng_t}
-\FIGG eevol  {\thom/\evol}  {\bhom/\evol}  [width=0.45\hsize,angle=0]  Evolution of the total energy (solid) in the system. Thermal energy is outlined by the dotted line, kinetic energy --- the dashed line. The green lines correspond to the models expanding into stratified ambient medium, the blue lines --- periodic density fluctuations. The right-hand side panel shows the models where the cosmic ray acceleration is taken into account.
+\FIGG eevol  {\thom/\evol}  {\bhom/\evol}  [width=0.45\hsize,angle=0]  Evolution of the total energy (solid) in the system. Thermal energy is outlined by the dotted line, kinetic energy --- the dashed line. The green lines correspond to the models expanding into stratified ambient medium, the black lines --- local density enhancement, the blue lines --- filament along the line of sight, the red lines show the evolution of the remnant expanding into homogenous ISM. The right-hand side panel shows simulations where the cosmic ray acceleration is taken into account.
 
 
-\subsection{Density power spectra}
+%\subsection{Density power spectra}
 \def\fftd{fft_profiles}
 \FIGG fftden  {\thom/\fftd}  {\bhom/\fftd}  [width=0.45\hsize,angle=0]  Density power spectra of the models evolving in the homogeneous medium. The time snapshots are indicated in the legend. The right-hand side panel shows the models where the cosmic ray acceleration is taken into account.
 
@@ -100,7 +109,7 @@ In this study we investigate quantitatively the feedback from supernova remnants
 %\def\xihi{\basedir/seedxi5_b5_n01_E1_M14_t3d3}
 
 
- \subsection{High resolution runs}
+% \subsection{High resolution runs}
 
 %\def\xilo{\basedir/saptitan/backreact7}
 %\def\xime{\basedir/saptitan/weakaccel7}

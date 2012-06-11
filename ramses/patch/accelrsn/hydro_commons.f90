@@ -14,10 +14,13 @@
 module hydro_commons
   use amr_parameters
   use hydro_parameters
-  real(dp),allocatable,dimension(:,:)::uold,unew  ! State vector and its update
-  real(dp),allocatable,dimension(:)  ::divu,enew  ! Non conservative variables
-  real(dp),allocatable,dimension(:,:)::position   ! Position vector
-  real(dp),allocatable,dimension(:,:)::radial     ! Radial profiles
+
+  integer,parameter::ores_max = 15
+ 
+  real(dp),allocatable,dimension(:,:)::uold,unew    ! State vector and its update
+  real(dp),allocatable,dimension(:)  ::divu,enew    ! Non conservative variables
+  real(dp),allocatable,dimension(:,:)::position     ! Position vector
+  real(dp),allocatable,dimension(:,:,:,:)::radial   ! Radial profiles
   real(dp)::mass_tot=0.0D0,mass_tot_0=0.0D0
   
   type physical_constants
@@ -63,7 +66,8 @@ module hydro_commons
     real(dp)::r_tot    ! total compression ratio of the shock
     real(dp)::g_eff    ! effective adiabatic index
   end type shock_parameters
-  type(shock_parameters)::shock(-1:+1),shock_prec(-1:+1)
+  !!type(shock_parameters)::shock(-1:+1),shock_prec(-1:+1)
+  type(shock_parameters)::shock(0:ores_max,0:ores_max,-1:+1),shock_prec(0:ores_max,0:ores_max,-1:+1)
   
   type history_record  ! [cgs]
     real(dp)::tS  ! time [s]
@@ -98,5 +102,6 @@ module const
   real(dp)::third = 0.33333333333333333
   real(dp)::forth = 0.25
   real(dp)::sixth = 0.16666666666666667
+  real(dp)::trpi = 3.14159265
 end module const
 

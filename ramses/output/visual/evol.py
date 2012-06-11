@@ -96,7 +96,7 @@ def plotevol(dir='test', var='radius', ymax=500.0, col='k', lab='test', fig=1, f
     #   pylab.semilogx(t,rs,label='RS')
     #if var == 'velocity': 
     #   pylab.ylim([1.e1, 1.e4])
-    pylab.xlim([100.0, 5.0e3])
+    pylab.xlim([10.0, 5.0e3])
     pylab.xlabel('t, years')
     ylab = var
     ylab=ylab.replace('_','_{')
@@ -106,8 +106,8 @@ def plotevol(dir='test', var='radius', ymax=500.0, col='k', lab='test', fig=1, f
     pylab.legend(loc=lloc)
     var=var.replace('/','_')
     print var
-    #if not fhold: matplotlib.pyplot.savefig(basedir+dir+var+'_t.pdf')
-    if not fhold: matplotlib.pyplot.show()
+    if not fhold: matplotlib.pyplot.savefig(basedir+dir+'/'+var+'_t.eps')
+    #if not fhold: matplotlib.pyplot.show()
     
 def plotevolall(var='radius', ymax=500.0, lloc='lower left'):
     c = ['g', 'r', 'm', 'b']

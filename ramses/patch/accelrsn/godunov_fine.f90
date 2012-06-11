@@ -627,7 +627,7 @@ subroutine integrate_tracers(ilevel)
       
       x = position(icell,0) * a_t
 !write(*,*)"shocks at r = ",shock(-1)%x,shock(+1)%x," pc"
-      if(shock(-1)%x-dx<=x.and.x<=shock(+1)%x+dx)then
+      if(shock(0,0,-1)%x-dx<=x.and.x<=shock(0,0,+1)%x+dx)then !!! ???
         d = uold(icell,1)
         ! time since shocked: sum of dt
         source = d * dtnew(ilevel)
@@ -645,7 +645,7 @@ subroutine integrate_tracers(ilevel)
         iS = when_shocked((uold(icell,VAR_TS)/d)*code%t)
         alpha = d*code%d/cgs%mp / history(iS)%n2
         B2 = reconstruct_B2(history(iS)%B2,&                ! B2_Sh
-                            x/shock(+1)%x,&                 ! r / r_Sh
+                            x/shock(0,0,+1)%x,&                 ! r / r_Sh
                             alpha,&                         ! d / d_Sh
                             history(iS)%n2/history(iS)%n0&  ! Rtot_Sh
                            )

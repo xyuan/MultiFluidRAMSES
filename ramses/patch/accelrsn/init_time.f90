@@ -35,6 +35,7 @@ subroutine init_time
   character(LEN=128)::filename
 
   integer::j, iampl
+  integer::iph,ith
 
 
      if(cosmo)then
@@ -137,24 +138,29 @@ subroutine init_time
             endif
           endif
           
-          shock(0)%x = SN%r_CD / code%x
-          shock(0)%x_min = shock(0)%x
-          shock(0)%x_max = shock(0)%x
-          do i=-1,+1,+2
-            shock(i)%x  = SNR(i)%r_Sh / code%x
-            shock(i)%u  = SNR(i)%u_Sh / code%u
-            shock(i)%M  = SNR(i)%M_Sh
-            shock(i)%n0 = SNR(i)%d0 * cgs%amu/cgs%mp / code%n
-            shock(i)%B0 = SN_DSA(i)%B0 / code%B
-            shock(i)%r  = SN_DSA(i)%Rtot
-            shock(i)%eta   = 0.
-            shock(i)%p_inj = 0.
-            shock(i)%p_max = 0.
-            shock(i)%W_cr  = 0.
-            shock(i)%r_sub = (gamma+1)/(gamma-1)
-            shock(i)%r_tot = (gamma+1)/(gamma-1)
-            shock(i)%g_eff = gamma
+          do ith=0,ores
+             do iph=0,ores
+                shock(iph,ith,0)%x = SN%r_CD / code%x
+                shock(iph,ith,0)%x_min = shock(iph,ith,0)%x
+                shock(iph,ith,0)%x_max = shock(iph,ith,0)%x
+                do i=-1,+1,+2
+                   shock(iph,ith,i)%x  = SNR(i)%r_Sh / code%x
+                   shock(iph,ith,i)%u  = SNR(i)%u_Sh / code%u
+                   shock(iph,ith,i)%M  = SNR(i)%M_Sh
+                   shock(iph,ith,i)%n0 = SNR(i)%d0 * cgs%amu/cgs%mp / code%n
+                   shock(iph,ith,i)%B0 = SN_DSA(i)%B0 / code%B
+                   shock(iph,ith,i)%r  = SN_DSA(i)%Rtot
+                   shock(iph,ith,i)%eta   = 0.
+                   shock(iph,ith,i)%p_inj = 0.
+                   shock(iph,ith,i)%p_max = 0.
+                   shock(iph,ith,i)%W_cr  = 0.
+                   shock(iph,ith,i)%r_sub = (gamma+1)/(gamma-1)
+                   shock(iph,ith,i)%r_tot = (gamma+1)/(gamma-1)
+                   shock(iph,ith,i)%g_eff = gamma
+                enddo
+             enddo
           enddo
+
           
           d_ISM = n_ISM * cgs%mp / code%d
           P_ISM = n_ISM/SNR(+1)%mu * cgs%kB*T_ISM / code%p
@@ -181,11 +187,16 @@ subroutine init_time
                     ' = ',int(H_th_new*sqrt(3*(boxlen*(0+delta))**2) / cs),&
                     ' - ',int(H_th_new*sqrt(3*(boxlen*(1-delta))**2) / cs)
         endif
-        do i=-1,+1
-          shock(i)%t = t_phys
-          shock_prec(i) = shock(i)
+
+        do ith=0,ores
+           do iph=0,ores
+              do i=-1,+1
+                 shock(iph,ith,i)%t = t_phys
+                 shock_prec(iph,ith,i) = shock(iph,ith,i)
+              enddo
+           enddo
         enddo
-        
+         
         if(nrestart>0)then
             t = tout(nrestart-1)
             if(myid==1)write(*,"(' t = ',1pe10.3)",advance='no')t
@@ -231,9 +242,9 @@ subroutine init_time
           if(myid==1)write(*,"(': t = ',F8.3,',',F8.3,' years: ',I6,' records')")&
                              history(0)%tS/cgs%yr,history(nstep)%tS/cgs%yr,nstep+1
           close(8)
-          shock_prec(+1)%t = history(nstep)%tS / code%t
-          shock_prec(+1)%x = history(nstep)%rS / code%x
-          shock_prec(+1)%u = history(nstep)%u0 / code%u
+          shock_prec(0,0,+1)%t = history(nstep)%tS / code%t
+          shock_prec(0,0,+1)%x = history(nstep)%rS / code%x
+          shock_prec(0,0,+1)%u = history(nstep)%u0 / code%u
         endif
         
         if(do_emission)then

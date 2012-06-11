@@ -251,7 +251,7 @@ subroutine project(clean_memory)
               r = sqrt(x(1)**2+x(2)**2+x(3)**2)
               
               ! Gather only shocked cells
-              if(shock(-1)%x<=r*scale*a_t.and.r*scale*a_t<=shock(+1)%x)then
+              if(shock(0,0,-1)%x<=r*scale*a_t.and.r*scale*a_t<=shock(0,0,+1)%x)then
                 
                 ! gather all parameters (hydro+CR)
                 
@@ -283,7 +283,7 @@ subroutine project(clean_memory)
                 ! compute non-thermal emission E^2.df/dE [erg/cm3/s]
                 
 !alpha=1.
-!theta=(shock(+1)%x/(r*scale*a_t))-1
+!theta=(shock(0,0,+1)%x/(r*scale*a_t))-1
                 if(npi>0)         call transport_CR(history(iS)%p_p,history(iS)%f_p,CR_pp,CR_fp,alpha,0D0  )
                 if(nic>0.or.nsy>0)call transport_CR(history(iS)%p_e,history(iS)%f_e,CR_pe,CR_fe,alpha,theta)
                 
@@ -703,7 +703,7 @@ if(myid==1.and.ncell_shocked_proc==0)call dump_CR(history(iS)%p_e/mc,history(iS)
     ! current magnetic field [G]
     
     B = reconstruct_B2(history(iS)%B2,&                ! B2_Sh
-                       r*scale*a_t/shock(+1)%x,&       ! r / r_Sh
+                       r*scale*a_t/shock(0,0,+1)%x,&       ! r / r_Sh
                        alpha,&                         ! d / d_Sh
                        history(iS)%n2/history(iS)%n0&  ! Rtot_Sh
                       )
@@ -816,9 +816,9 @@ if(myid==1.and.ncell_shocked_proc==0)call dump_CR(history(iS)%p_e/mc,history(iS)
       write(*,*)'  writing file ',filename
       open(unit=20,file=filename,recl=1024,status='replace',form='formatted')
       write(20,*)'time (yr) = ',t_phys*(code%t/cgs%yr)
-      write(20,*)'r_RS (pc) = ',shock(-1)%x*(code%x/cgs%pc)
-      write(20,*)'r_CD (pc) = ',shock( 0)%x*(code%x/cgs%pc)
-      write(20,*)'r_FS (pc) = ',shock(+1)%x*(code%x/cgs%pc)
+      write(20,*)'r_RS (pc) = ',shock(0,0,-1)%x*(code%x/cgs%pc)
+      write(20,*)'r_CD (pc) = ',shock(0,0, 0)%x*(code%x/cgs%pc)
+      write(20,*)'r_FS (pc) = ',shock(0,0,+1)%x*(code%x/cgs%pc)
       write(20,'(x,5a)')'0        1               2               3               4               ',&
                                  '5               6               7               8               ',&
                                  '9               10              11              ',&

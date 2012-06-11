@@ -209,7 +209,7 @@ def read_times(dir="test/"):
     f.close()
     return tseq
 
-def anim_slices(dir="bckreact_b5_n01_E1_M14_t4d3",out=[2,3,4,5,6,7,8,9],end=[1.,1.,1.],N=None,var='d',log=True,fig=1,over=False, rmax=7.0, vmax=0.8, alpha=0.99, ejecta=True, dpi=300):
+def anim_slices(dir="test",out=range(1,17),end=[1.,1.,1.],N=None,var='d',log=True,fig=1,over=False, rmax=7.0, vmin=0.02, vmax=0.8, alpha=0.99, ejecta=True, dpi=300):
 #def anim_slices(dir="backreaction_b5_3d3yr",out=[3,6],end=[1.,1.,1.],N=None,var='d',log=True,fig=1,over=False, rmax=15.0, mp4="dens_maps.mp4"):
     # reading time intervals
     tseq = read_times(dir=dir+'/')
@@ -225,10 +225,10 @@ def anim_slices(dir="bckreact_b5_n01_E1_M14_t4d3",out=[2,3,4,5,6,7,8,9],end=[1.,
         pylab.close(fig)
         figure = matplotlib.pyplot.figure(num=fig)
         pylab.hold(False)
-        [map, img, jet] = show_slice(var=var,log=log,rmax=rmax,ax=a,ejecta=ejecta, vmax=vmax, alpha=alpha)
+        [map, img, jet] = show_slice(var=var,log=log,rmax=rmax,ax=a,ejecta=ejecta, vmin=vmin, vmax=vmax, alpha=alpha)
         #ann = pylab.annotate(tseq[i-1]+' yrs', xy=(.5, .6),  xycoords='axes fraction', horizontalalignment='center', verticalalignment='center', color="white") 
         ann = pylab.annotate(tseq[i-1]+' yrs', xy=(.8, .9),  xycoords='axes fraction', horizontalalignment='center', verticalalignment='center', color="white") 
-	fname = '_tmp%03d.png'%i
+	fname = var+'_tmp%03d.png'%i
 	print 'Saving frame', fname
 	figure.savefig(basedir+dir+'/'+fname, dpi=dpi, transparent=True)
 	pylab.hold(False)
@@ -450,6 +450,10 @@ def loop_fft(dir="test",out=[4,5,6,7,8,9], size=6,fig=1, over=False, eps="fft_pr
     matplotlib.pyplot.savefig(basedir+dir+'/'+eps)
     matplotlib.pyplot.show()
 
+def ekin_op(dset):
+    m = dset["mass"]
+    v2 = numpy.sqrt(numpy.sum(dset["ux"]**2+dset["uy"]**2+dset["uz"]**2, axis=1))
+    return m*v2/2.0
 
 def eth_evol(dir="test", size=6, fig=1, fhold=False, col='k'):
     rc('text', usetex=True)
@@ -479,6 +483,7 @@ def eth_evol(dir="test", size=6, fig=1, fhold=False, col='k'):
         ecr.append(a-b)
         ect.append(1.0-b/a)
         ekn.append(c)
+        #ekn.append(ScalarOperator(ekin_op))
         esum.append(a + c)
         den.append(r)
         print a,b,c, r

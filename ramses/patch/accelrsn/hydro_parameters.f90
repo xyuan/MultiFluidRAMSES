@@ -1,15 +1,17 @@
-!================================================!
-! HYDRO PARAMETERS                               !
-!================================================!
-! module hydro_parameters                        !
-!================================================!
-! 2008/09/24 : version 3.0                       !
-! 2009/03/02 : SNR parameters                    !
-! 2009/06/04 : acceleration parameters           !
-! 2009/11/03 : advect accelerated particles      !
-! 2010/10/28 : added composition                 !
-!      11/06 : moved shock parameters to commons !
-!================================================!
+!==================================================!
+! HYDRO PARAMETERS                                 !
+!==================================================!
+! module hydro_parameters                          !
+!==================================================!
+! 2008/09/24 : version 3.0                         !
+! 2009/03/02 : SNR parameters                      !
+! 2009/06/04 : acceleration parameters             !
+! 2009/11/03 : advect accelerated particles        !
+! 2010/10/28 : added composition                   !
+!      11/06 : moved shock parameters to commons   !
+! 2012/05/01 : dk: added params for ISM structure  !
+! 2012/06/06 : dk: added angular param ores        !
+!==================================================!
 
 module hydro_parameters
   use amr_parameters
@@ -32,6 +34,8 @@ module hydro_parameters
   real(dp)::mu_d           ! density  enhancement factor mu_d = 1 + 4*x_He, such that rho = mu_d nH.mp
   real(dp)::mu_P           ! pressure enhancement factor mu_P = 2 + 3*x_He, such that   P = mu_P nH.kB.T 
 
+
+  integer::ores                        ! angular resolution for the averaged profiles (default is 0)
   real(dp),dimension(1:NDIM)::n_freq   ! ISM spacial fluctuation frequencies dim=1:3
   real(dp),dimension(1:NDIM)::n_phase  ! ISM spacial fluctuation phases dim=1:3
   real(dp)::n_ampl                     ! ISM density enchancement
