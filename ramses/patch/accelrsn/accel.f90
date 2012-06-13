@@ -211,8 +211,10 @@ subroutine average_radial_profile(ilevel)
   real(dp),dimension(:,:,:,:),allocatable::temp_loc,temp
   real(dp),dimension(:),allocatable::comm_buffin,comm_buffout
   real(dp),dimension(0:ores_max,0:ores_max,1:3)::dirs
+  real(dp),dimension(0:nvar)::radial_tmp
 
   nshells_max = ceiling(2**ilevel * sqrt(3D0))
+  !nshells_max = ceiling(2**ilevel * sqrt(3D0))*ores
   allocate(temp_loc(1:nshells_max,0:ores,0:ores,0:nvar))
   allocate(temp    (1:nshells_max,0:ores,0:ores,0:nvar))
   dx=0.5D0**ilevel*boxlen
@@ -332,8 +334,9 @@ subroutine average_radial_profile(ilevel)
         enddo
 
         do ishell=1,nshells_max
+           !  if (temp(ishell,iph,ith,6)>0.0) write(*,*) ishell, '0: PRESSURE: ', temp(ishell,iph,ith,6), ncells(ishell,iph,ith)
            if(ncells(ishell,iph,ith) > 0) temp(ishell,iph,ith,1:nvar) = temp(ishell,iph,ith,1:nvar) / ncells(ishell,iph,ith)
-           !write(*,*) ishell, 'PRESSURE: ', temp(ishell,iph,ith,6), iph, ith
+           !  if (temp(ishell,iph,ith,6)>0.0) write(*,*) ishell, '1: PRESSURE: ', temp(ishell,iph,ith,6), iph, ith
            !if(myid==1)write(*,*)ncells(ishell),' cells averaged in shell ',ishell,' of center ',temp(ishell,iph,ith,0)
         enddo
      enddo
@@ -366,26 +369,39 @@ subroutine average_radial_profile(ilevel)
            !!! if(ncells(ishell,iph,ith) > 0) nshells_eff = nshells_eff+1
         enddo
      enddo
-     ! if any of the sectors contains zero cells erase the counter, remove the entire shell
-     do ith=0,ores
-        do iph=0,ores
-           if(ncells(ishell,iph,ith) < 1) ncells_allsectors(ishell) = 0
-        enddo
-     enddo
+     ! if any of the sectors contains zero cells erase the counter, remove the entire shell !! which is not correct....
+    ! do ith=0,ores
+    !    do iph=0,ores
+    !       if(ncells(ishell,iph,ith) < 1) ncells_allsectors(ishell) = 0
+    !    enddo
+    ! enddo
      if(ncells_allsectors(ishell) > 0) nshells_eff = nshells_eff+1
   enddo
   if(allocated(radial))deallocate(radial)
   allocate(radial(1:nshells_eff,0:ores,0:ores,0:nvar))
+  !write(*,*) 'NSHELLS_EFF=',nshells_eff, ',    NSHELL_MAX=', nshells_max
   i = 1
   do ishell=1,nshells_max
     if(ncells_allsectors(ishell) > 0)then
-      radial(i,:,:,:) = temp(ishell,:,:,:)
-      ncells_allsectors(i) = ncells_allsectors(ishell)
+       ! smooth the data at the same radius with some sectors of zero cells
+       radial(i,:,:,:) = temp(ishell,:,:,:)
+       do ith=0,ores
+          do iph=0,ores
+             if (ncells(ishell,iph,ith)>0) radial_tmp(:) = temp(ishell,iph,ith,:)
+          enddo
+       enddo
+       do ith=0,ores
+          do iph=0,ores
+             if (ncells(ishell,iph,ith)<1) radial(i,iph,ith,:) = radial_tmp(:)
+          enddo
+       enddo
+
+       ncells_allsectors(i) = ncells_allsectors(ishell)
            !write(*,*) ishell,i, 'RADIAL PRESSURE: ', radial(i,0,0,6), temp(ishell,0,0,6)
            !write(*,*) ishell,i, 'RADIAL PRESSURE: ', radial(i,0,ores,6), temp(ishell,0,ores,6)
            !write(*,*) ishell,i, 'RADIAL PRESSURE: ', radial(i,ores,0,6), temp(ishell,ores,0,6)
            !write(*,*) ishell,i, 'RADIAL PRESSURE: ', radial(i,ores,ores,6), temp(ishell,ores,ores,6)
-      i = i+1
+       i = i+1
     endif
   enddo
 
@@ -394,11 +410,11 @@ subroutine average_radial_profile(ilevel)
   !  write(*,"('i = ',I3,' : r = ',F6.4,' : d = ',ES13.6,' , u = ',ES13.6,1x,ES13.6,1x,ES13.6,&
   !  ' , P = ',ES13.6,', ej = ',ES13.6,', g = ',ES13.6,' (',I6,' cells)')")&
   !  i,radial(i,0,0,0),radial(i,0,0,1),radial(i,0,0,2),radial(i,0,0,3),radial(i,0,0,4),radial(i,0,0,5), &
-  !    radial(i,0,0,6),radial(i,0,0,7),ncells(i)
+  !    radial(i,0,0,6),radial(i,0,0,7),ncells(i,0,0)
   !  write(*,"('i = ',I3,' : r = ',F6.4,' : d = ',ES13.6,' , u = ',ES13.6,1x,ES13.6,1x,ES13.6,&
   !  ' , P = ',ES13.6,', ej = ',ES13.6,', g = ',ES13.6,' (',I6,' cells)')")&
   !  i,radial(i,ores,ores,0),radial(i,ores,ores,1),radial(i,ores,ores,2),radial(i,ores,ores,3),radial(i,ores,ores,4), &
-  !    radial(i,ores,ores,5),radial(i,ores,ores,6),radial(i,ores,ores,7),ncells(i)
+  !    radial(i,ores,ores,5),radial(i,ores,ores,6),radial(i,ores,ores,7),ncells(i,ores,ores)
   !enddo
   !endif
   deallocate(temp_loc)
@@ -437,6 +453,7 @@ subroutine diagnose_shocks(ilevel)
         i_CD(:) = (/0,0,0/)
         f_CD(:) = (/1,0,0/)
         delta_max = 0
+        !write(*,*) '********** RADIAL BOUNDS:    ------>'
         !write(*,*) 'lbound, ubound: ', lbound(radial,1),ubound(radial,1)
         do i=lbound(radial,1),ubound(radial,1)-1
           !write(*,*) i, iph, ith, '  pressure: ', radial(i+1,iph,ith,6), radial(i,iph,ith,6)
@@ -450,10 +467,11 @@ subroutine diagnose_shocks(ilevel)
         shock(iph,ith,0)%x = (radial(i_CD(0),iph,ith,0)+radial(i_CD(0)+1,iph,ith,0))/2.
 
         !! shock(iph,ith,0)%x = (radial(i_CD(iph,ith,0),iph,ith,0)+radial(i_CD(iph,ith,0)+1,iph,ith,0))/2.
+        !      if (t_phys>400.0) then
         !write(*,*)'i_min = ',lbound(radial,1),', r_min = ',radial(lbound(radial,1),iph,ith,0),' pc'
         !write(*,*)'i_CD  = ',i_CD(0)         ,', r_CD  = ',shock(iph,ith,0)%x*(code%x/user%x),' pc'
         !write(*,*)'i_max = ',ubound(radial,1),', r_max = ',radial(ubound(radial,1),iph,ith,0),' pc'
-        
+        !      endif        
         ! shocks
 
         do eps=-1,+1,2
@@ -463,10 +481,12 @@ subroutine diagnose_shocks(ilevel)
            i = i_CD(0)
            i_max = i_CD(0)
            do while(i>lbound(radial,1).and.i<ubound(radial,1))
+              delta_i = abs(radial(i+eps,iph,ith,5) - radial(i,iph,ith,5))  ! pressure
+              !if (t_phys>400.0) then
               !write(*,*) 'eps, i, iph, ith;  gamma:  radial(i+eps,iph,ith,5), radial(i,iph,ith,5)'
               !write(*,*) eps, i, iph, ith,  radial(i+eps,iph,ith,5), radial(i,iph,ith,5)
-              delta_i = abs(radial(i+eps,iph,ith,5) - radial(i,iph,ith,5))  ! pressure
               !write(*,*) 'delta_max = ',delta_max,',   delta_i = ', delta_i 
+              !endif
               if(delta_i>delta_max)then
                  delta_max=delta_i
                  i_max=i
@@ -475,7 +495,8 @@ subroutine diagnose_shocks(ilevel)
               i = i+eps
            enddo
 
-           !write(*,*) eps, i_max,i
+           !if (t_phys>400.0) write(*,*) 'eps=',eps,', imax=', i_max,',  i=',i
+           if (i_max<3) write(*,*) '*************************   LOWER LIMIT of i_max!!!', i_max, i
            shock(iph,ith,eps)%x = (radial(i_max,iph,ith,0)+radial(i_max+eps,iph,ith,0))/2. !!!
            i1 = i_max + eps*int(1.5+eps/2.)
            i2 = i_max
