@@ -273,10 +273,14 @@ subroutine average_radial_profile(ilevel)
                                     sin((1.0*iph)/(1.0*ores+1.0)*0.5*trpi) .and. & 
                   position(icell,2)/sqrt(position(icell,1)**2 + position(icell,2)**2)<&
                                     sin((1.0*iph+1.0)/(1.0*ores+1.0)*0.5*trpi)) .and. &
-                 (position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)>&
-                                         sin((1.0*ith)/(1.0*ores+1.0)*0.5*trpi) .and. & 
-                  position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)<&
-                                         sin((1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi)) )then
+                 (position(icell,3)/position(icell,0)>sin((1.0*ith)/(1.0*ores+1.0)*0.5*trpi) .and. & 
+                  position(icell,3)/position(icell,0)<sin((1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi)) )then
+
+!                 (position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)>&
+!                                         sin((1.0*ith)/(1.0*ores+1.0)*0.5*trpi) .and. & 
+!                  position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)<&
+!                                         sin((1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi)) )then
+
                 ! write(*,*) ' dx=', dx, '<', abs((position(icell,1)/dirs(iph,ith,1))*dirs(iph,ith,2) - position(icell,2))
 
                 ! in which shell are we ?
@@ -379,7 +383,7 @@ subroutine average_radial_profile(ilevel)
   enddo
   if(allocated(radial))deallocate(radial)
   allocate(radial(1:nshells_eff,0:ores,0:ores,0:nvar))
-  write(*,*) 'NSHELLS_EFF=',nshells_eff, ',    NSHELL_MAX=', nshells_max
+  !write(*,*) 'NSHELLS_EFF=',nshells_eff, ',    NSHELL_MAX=', nshells_max
   i = 1
   do ishell=1,nshells_max
     if(ncells_allsectors(ishell) > 0)then
@@ -744,14 +748,21 @@ subroutine back_react(ilevel)
   integer::i,ind,icell,iskip,n, eps=+1
   integer::igrid, ngrid, ncache
   real(dp)::dx,shock_half_width,delta_icell,g_eff_icell,B_eff_icell
+  real(dp), dimension(0:ores,0:ores)::g_eff_icell_sct
+  ! smoothing region for g_eff
+  real(dp)::epsmth  = 0.1
 
 
   integer::ibound,boundary_dir,idim,inbor
   integer,dimension(1:nvector),save::ind_grid,ind_grid_ref
   integer,dimension(1:nvector),save::ind_cell,ind_cell_ref
 
-  integer::iph,ith
+  integer::iph,ith,oresfix
+  real(dp)::trph1,trth1,trph2,trth2
+  real(dp)::phpos,thpos
 
+
+  oresfix = 2*ores - 1
 
   dx=0.5D0**ilevel*boxlen
   shock_half_width=2*dx
@@ -766,30 +777,61 @@ subroutine back_react(ilevel)
          do ith=0,ores
             do iph=0,ores
 
+               trph1 = (1.0*iph)/(1.0*ores+1.0)*0.5*trpi
+               trth1 = (1.0*ith)/(1.0*ores+1.0)*0.5*trpi
+               trph2 = (1.0*iph+1.0)/(1.0*ores+1.0)*0.5*trpi
+               trth2 = (1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi
+
+               phpos = position(icell,2)/sqrt(position(icell,1)**2 + position(icell,2)**2)
+               thpos = position(icell,3)/position(icell,0)
                ! consider each sector separately
-               if( (position(icell,2)/sqrt(position(icell,1)**2 + position(icell,2)**2)>&
-                                    sin((1.0*iph)/(1.0*ores+1.0)*0.5*trpi) .and. & 
-                    position(icell,2)/sqrt(position(icell,1)**2 + position(icell,2)**2)<&
-                                    sin((1.0*iph+1.0)/(1.0*ores+1.0)*0.5*trpi)) .and. &
-                   (position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)>&
-                                         sin((1.0*ith)/(1.0*ores+1.0)*0.5*trpi) .and. & 
-                    position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)<&
-                                         sin((1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi)) )then
+               if( (phpos>sin(trph1) .and. phpos<sin(trph2)) .and. &
+                   (thpos>sin(trth1) .and. thpos<sin(trth2) )then
+
+!                   (position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)>&
+!                                         sin(trth1) .and. & 
+!                    position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)<&
+!                                         sin(trth2) )then
 
                   delta_icell = position(icell,0)-shock(iph,ith,eps)%x/a_t
                   if(delta_icell*eps>=0)then
 #ifdef VAR_G
                      ! to get the proper compression of the fluid
-                     g_eff_icell = gamma + (shock(iph,ith,eps)%g_eff-gamma)*exp(-0.5*delta_icell**2/shock_half_width**2)
-                     uold(icell,VAR_G) = uold(icell,1) / (g_eff_icell-1.)   !!! applying g_eff to the scheme
+                     g_eff_icell_sct(iph,ith) = gamma + (shock(iph,ith,eps)%g_eff-gamma)*exp(-0.5*delta_icell**2/shock_half_width**2)
+                     uold(icell,VAR_G) = uold(icell,1) / (g_eff_icell_sct(iph,ith)-1.)   !!! applying g_eff to the scheme
                   
                      !if (shock(iph,ith,eps)%t>20.0) write(*,*) shock(iph,ith,eps)%t, eps, iph, ith, &
                      !     ':   RADIUS = ', position(icell,0), shock(iph,ith,eps)%x, ',   GAMMA = ', g_eff_icell
 #endif
+
+
                      n=n+1
                   endif
                endif
 
+            enddo
+         enddo
+
+! applying the smoothing of the gamma on the egde of the sector
+         do ith=1,ores-1
+            do iph=1,ores-1
+               trph1 = (1.0*iph)/(1.0*ores+1.0)*0.5*trpi
+               trth1 = (1.0*ith)/(1.0*ores+1.0)*0.5*trpi
+               phpos = position(icell,2)/sqrt(position(icell,1)**2 + position(icell,2)**2)
+               thpos = position(icell,3)/position(icell,0)
+               if( (phpos>sin(trph1*(1.0-epsmth)) .and. phpos<sin(trph1))) then
+                    g_eff_icell = g_eff_icel_sct(iph,ith)*((1.0-phpos)/epsmth) + &
+                                  0.5*(g_eff_icel_sct(iph,ith)+g_eff_icel_sct(iph+1,ith))*(1.0+(phpos-1.0)/epsmth)
+               if( (phpos>sin(trph1) .and. phpos<sin(trph1)*(1.0+epsmth))) then
+                    g_eff_icell = 0.5*(g_eff_icel_sct(iph-1,ith)+g_eff_icel_sct(iph,ith))*(1.0-(phpos-1.0)/epsmth) + &
+                                  g_eff_icel_sct(iph,ith)*((phpos-1.0)/epsmth)
+
+               if( (thpos>sin(trth1*(1.0-epsmth)) .and. thpos<sin(trth1))) then
+                    g_eff_icell = g_eff_icel_sct(iph,ith)*((1.0-thpos)/epsmth) + &
+                                  0.5*(g_eff_icel_sct(iph,ith)+g_eff_icel_sct(iph,ith+1))*(1.0+(thpos-1.0)/epsmth)
+               if( (thpos>sin(trth1) .and. thpos<sin(trth1)*(1.0+epsmth))) then
+                    g_eff_icell = 0.5*(g_eff_icel_sct(iph,ith-1)+g_eff_icel_sct(iph,ith))*(1.0-(thpos-1.0)/epsmth) + &
+                                  g_eff_icel_sct(iph,ith)*((thpos-1.0)/epsmth)
             enddo
          enddo
 

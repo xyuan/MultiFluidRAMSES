@@ -273,10 +273,14 @@ subroutine average_radial_profile(ilevel)
                                     sin((1.0*iph)/(1.0*ores+1.0)*0.5*trpi) .and. & 
                   position(icell,2)/sqrt(position(icell,1)**2 + position(icell,2)**2)<&
                                     sin((1.0*iph+1.0)/(1.0*ores+1.0)*0.5*trpi)) .and. &
-                 (position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)>&
-                                         sin((1.0*ith)/(1.0*ores+1.0)*0.5*trpi) .and. & 
-                  position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)<&
-                                         sin((1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi)) )then
+                 (position(icell,3)/position(icell,0)>sin((1.0*ith)/(1.0*ores+1.0)*0.5*trpi) .and. & 
+                  position(icell,3)/position(icell,0)<sin((1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi)) )then
+
+!                 (position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)>&
+!                                         sin((1.0*ith)/(1.0*ores+1.0)*0.5*trpi) .and. & 
+!                  position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)<&
+!                                         sin((1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi)) )then
+
                 ! write(*,*) ' dx=', dx, '<', abs((position(icell,1)/dirs(iph,ith,1))*dirs(iph,ith,2) - position(icell,2))
 
                 ! in which shell are we ?
@@ -744,58 +748,111 @@ subroutine back_react(ilevel)
   integer::i,ind,icell,iskip,n, eps=+1
   integer::igrid, ngrid, ncache
   real(dp)::dx,shock_half_width,delta_icell,g_eff_icell,B_eff_icell
-
+  real(dp)::delta_icell_,g_eff_icell_,B_eff_icell_
+  ! real(dp), dimension(0:ores,0:ores)::g_eff_icell_sct
 
   integer::ibound,boundary_dir,idim,inbor
   integer,dimension(1:nvector),save::ind_grid,ind_grid_ref
   integer,dimension(1:nvector),save::ind_cell,ind_cell_ref
 
   integer::iph,ith
-
+  real(dp)::trph1,trth1,trph2,trth2
+  real(dp)::phpos,thpos
+  ! smoothing region for g_eff
+  real(dp)::epsmth  = 2.0e-1
 
   dx=0.5D0**ilevel*boxlen
   shock_half_width=2*dx
   
   n=0
-  do ind=1,twotondim 
-     iskip=ncoarse+(ind-1)*ngridmax
-     do i=1,active(ilevel)%ngrid
-        icell=active(ilevel)%igrid(i)+iskip
-        !write(*,*) '*** i, icell: ', i, icell, active(ilevel)%igrid(i)
-
-         do ith=0,ores
-            do iph=0,ores
-
-               ! consider each sector separately
-               if( (position(icell,2)/sqrt(position(icell,1)**2 + position(icell,2)**2)>&
-                                    sin((1.0*iph)/(1.0*ores+1.0)*0.5*trpi) .and. & 
-                    position(icell,2)/sqrt(position(icell,1)**2 + position(icell,2)**2)<&
-                                    sin((1.0*iph+1.0)/(1.0*ores+1.0)*0.5*trpi)) .and. &
-                   (position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)>&
-                                         sin((1.0*ith)/(1.0*ores+1.0)*0.5*trpi) .and. & 
-                    position(icell,3)/sqrt(position(icell,1)**2 + position(icell,2)**2 + position(icell,3)**2)<&
-                                         sin((1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi)) )then
-
-                  delta_icell = position(icell,0)-shock(iph,ith,eps)%x/a_t
-                  if(delta_icell*eps>=0)then
 #ifdef VAR_G
-                     ! to get the proper compression of the fluid
-                     g_eff_icell = gamma + (shock(iph,ith,eps)%g_eff-gamma)*exp(-0.5*delta_icell**2/shock_half_width**2)
-                     uold(icell,VAR_G) = uold(icell,1) / (g_eff_icell-1.)   !!! applying g_eff to the scheme
+
+  do ith=0,ores
+     do iph=0,ores
+
+        trph1 = (1.0*iph)/(1.0*ores+1.0)*0.5*trpi
+        trth1 = (1.0*ith)/(1.0*ores+1.0)*0.5*trpi
+        trph2 = (1.0*iph+1.0)/(1.0*ores+1.0)*0.5*trpi
+        trth2 = (1.0*ith+1.0)/(1.0*ores+1.0)*0.5*trpi
+        do ind=1,twotondim 
+           iskip=ncoarse+(ind-1)*ngridmax
+           do i=1,active(ilevel)%ngrid
+              icell=active(ilevel)%igrid(i)+iskip
+              !write(*,*) '*** i, icell: ', i, icell, active(ilevel)%igrid(i)
+
+               phpos = position(icell,2)/sqrt(position(icell,1)**2 + position(icell,2)**2)
+               thpos = position(icell,3)/position(icell,0)
+               ! consider each sector separately
+               if( (phpos>sin(trph1) .and. phpos<sin(trph2)) .and. &
+                   (thpos>sin(trth1) .and. thpos<sin(trth2)) )then
+
+                   delta_icell = position(icell,0)-shock(iph,ith,eps)%x/a_t
+                   if(delta_icell*eps>=0)then
+                      ! to get the proper compression of the fluid
+                      g_eff_icell = gamma + (shock(iph,ith,eps)%g_eff-gamma)*exp(-0.5*delta_icell**2/shock_half_width**2)
+                      uold(icell,VAR_G) = uold(icell,1) / (g_eff_icell-1.)   !!! applying g_eff to the scheme
+                      !write(*,*) '0:   GAMMA = ', g_eff_icell
                   
-                     !if (shock(iph,ith,eps)%t>20.0) write(*,*) shock(iph,ith,eps)%t, eps, iph, ith, &
-                     !     ':   RADIUS = ', position(icell,0), shock(iph,ith,eps)%x, ',   GAMMA = ', g_eff_icell
-#endif
-                     n=n+1
+                      !if (shock(iph,ith,eps)%t>20.0) write(*,*) shock(iph,ith,eps)%t, eps, iph, ith, &
+                      !     ':   RADIUS = ', position(icell,0), shock(iph,ith,eps)%x, ',   GAMMA = ', g_eff_icell
+
+                      n=n+1
+
+! applying the smoothing of the gamma on the egde of the sectors
+                      ! phi edges
+                      !if( iph<ores .and. phpos>sin(trph2)*(1.0-epsmth) ) then
+                      !    delta_icell_ = position(icell,0)-shock(iph+1,ith,eps)%x/a_t
+                      !    g_eff_icell_ = gamma + (shock(iph+1,ith,eps)%g_eff-gamma)*exp(-0.5*delta_icell_**2/shock_half_width**2)
+                      !    if (shock(iph,ith,eps)%t>10.7) then
+                      !   !     write(*,*) iph, ith, 'ph SMOOTHING: ', (delta_icell_- delta_icell), (g_eff_icell_ - g_eff_icell)
+                      !    endif
+                      !    g_eff_icell = g_eff_icell*((1.0-phpos)/epsmth) + 0.5*(g_eff_icell_+g_eff_icell)*(1.0+(phpos-1.0)/epsmth)
+                      !endif
+                      !if( iph>0 .and. phpos<sin(trph1)*(1.0+epsmth) ) then
+                      !    delta_icell_ = position(icell,0)-shock(iph-1,ith,eps)%x/a_t
+                      !    g_eff_icell_ = gamma + (shock(iph-1,ith,eps)%g_eff-gamma)*exp(-0.5*delta_icell_**2/shock_half_width**2)
+                      !    if (shock(iph,ith,eps)%t>10.7) then
+                      !   !     write(*,*) iph, ith, 'ph SMOOTHING: ', (delta_icell_ - delta_icell), (g_eff_icell_ - g_eff_icell)
+                      !    endif
+                      !    g_eff_icell = 0.5*(g_eff_icell_+g_eff_icell)*(1.0-(phpos-1.0)/epsmth) + g_eff_icell*((phpos-1.0)/epsmth)
+                      ! endif
+
+                      ! theta egdes
+                      !if( ith<ores .and. thpos>sin(trth2)*(1.0-epsmth) ) then
+                      !    delta_icell_ = position(icell,0)-shock(iph,ith+1,eps)%x/a_t
+                      !    g_eff_icell_ = gamma + (shock(iph,ith+1,eps)%g_eff-gamma)*exp(-0.5*delta_icell_**2/shock_half_width**2)
+                      !    if (shock(iph,ith,eps)%t>1900.2) then 
+                      !   !     write(*,*) iph, ith, 'th SMOOTHING: ', (delta_icell_ - delta_icell), (g_eff_icell_ - g_eff_icell)
+                      !    endif
+                      !    g_eff_icell = g_eff_icell*((1.0-thpos)/epsmth) + 0.5*(g_eff_icell_+g_eff_icell)*(1.0+(thpos-1.0)/epsmth)
+                      !endif
+                      !if( ith>0 .and. thpos<sin(trth1)*(1.0+epsmth) ) then
+                      !    delta_icell_ = position(icell,0)-shock(iph,ith-1,eps)%x/a_t
+                      !    g_eff_icell_ = gamma + (shock(iph,ith-1,eps)%g_eff-gamma)*exp(-0.5*delta_icell_**2/shock_half_width**2)
+                      !    if (shock(iph,ith,eps)%t>1900.2) then
+                      !   !     write(*,*) iph, ith, 'th SMOOTHING: ', (delta_icell_ - delta_icell), (g_eff_icell_ - g_eff_icell)
+                      !    endif
+                      !    g_eff_icell = 0.5*(g_eff_icell_+g_eff_icell)*(1.0-(thpos-1.0)/epsmth) + g_eff_icell*((thpos-1.0)/epsmth)
+                      !endif
+
+                      !uold(icell,VAR_G) = uold(icell,1) / (g_eff_icell-1.)   !!! applying g_eff to the scheme
+                      !write(*,*) '1:   GAMMA = ', g_eff_icell
+
+                      !write(*,*) '1: ', shock(iph,ith,eps)%t, eps, iph, ith, &
+                      !     ':   RADIUS = ', position(icell,0), shock(iph,ith,eps)%x, ',   GAMMA = ', g_eff_icell
+
                   endif
                endif
+           end do
+        end do
 
-            enddo
-         enddo
+     enddo
+  enddo
 
-     end do
-  end do
   !write(*,*)'  backreaction applied on ',n,'cells'
+
+#endif
+
 
 end subroutine back_react
 
